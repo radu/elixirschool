@@ -1,0 +1,167 @@
+# Управляющие конструкции
+
+## if и unless
+
+Скорее всего, вы уже встречали оператор `if/2`, а если использовали Ruby, то встречали и `unless/2`. В Elixir они функционируют также, но определены как макрос, а не конструкция языка. Код реализации можно увидеть в модуле [Kernel](https://hexdocs.pm/elixir/Kernel.html).
+
+Стоит заметить что в Elixir единственными ложными значениями являются `nil` и `false`.
+
+
+```elixir
+ if String.valid?("Hello") do
+```
+
+```elixir
+ if "a string value" do
+```
+
+`unless/2` похож на `if/2`, но работает наоборот:
+
+
+```elixir
+ unless is_integer("hello") do
+```
+
+## case
+
+Если нужно сопоставить с несколькими образцами, используется оператор `case/2`:
+
+
+```elixir
+ case {:ok, "Hello World"} do
+```
+
+Переменная `_` является важной частью конструкции `case/2`. Без неё в случае отсутствия найденного сопоставления произойдёт ошибка:
+
+
+```elixir
+ case :even do
+```
+
+```elixir
+ case :even do
+```
+
+Можно рассматривать `_` как `else`, который будет сопоставлен с чем угодно.
+Так как `case/2` основывается на сопоставлении с образцом, то все те же ограничения и особенности продолжают работать. Если нужно сопоставлять со значением переменной вместо её присвоения, используется уже знакомый оператор `^/1`:
+
+
+```elixir
+ pie = 3.14
+```
+
+```elixir
+ case "cherry pie" do
+```
+
+Другой интересной возможностью `case/2` является поддержка ограничивающих выражений:
+
+_Этот пример взят из официальной документации [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#case)._
+
+
+```elixir
+ case {1, 2, 3} do
+```
+
+Также советуем почитать официальную документацию про [выражения, доступные в ограничивающих выражениях](https://hexdocs.pm/elixir/guards.html#list-of-allowed-expressions).
+
+## cond
+
+Когда нужно проверять условия, а не значения, можно использовать `cond/1`. Это похоже на `else if` или `elsif` в других языках:
+
+_Этот пример взят из официальной документации [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#cond)._
+
+
+```elixir
+ cond do
+```
+
+Также как и `case/2`, `cond/1` вызовет ошибку, если не пройдёт ни одно из выражений. Для решения этой проблемы можно определить условие в `true`:
+
+
+```elixir
+ cond do
+```
+
+## with
+
+Специальная форма `with/1` может пригодиться в ситуациях, когда сложно использовать оператор потока, либо когда нужен вложенный вызов `case/2`. `with/1` состоит из ключевых слов, генераторов и выражения в конце.
+
+Мы ещё обсудим генераторы в [уроке о списковых включениях](/ru/lessons/basics/comprehensions), но сейчас нам достаточно знать лишь то, что они используют [сопоставление с образцом](/ru/lessons/basics/pattern_matching) для сравнения правой части `<-` с левой.
+
+Начнём с простого примера с `with/1`:
+
+
+```elixir
+ user = %{first: "Sean", last: "Callan"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+В случае, если для выражения не найдётся совпадение, вернётся несовпадающее значение:
+
+
+```elixir
+ user = %{first: "doomspork"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+Давайте взглянем на пример побольше без использования `with/1`, а затем узнаем, как мы могли бы его улучшить:
+
+
+```elixir
+case Repo.insert(changeset) do
+  {:ok, user} ->
+    case Guardian.encode_and_sign(user, :token, claims) do
+      {:ok, token, full_claims} ->
+        important_stuff(token, full_claims)
+
+      error ->
+        error
+    end
+
+  error ->
+    error
+end
+```
+
+А теперь благодаря `with/1` мы в итоге получим короткий и простой для понимания код:
+
+
+```elixir
+with {:ok, user} <- Repo.insert(changeset),
+     {:ok, token, full_claims} <- Guardian.encode_and_sign(user, :token, claims) do
+  important_stuff(token, full_claims)
+end
+```
+
+Начиная с версии Elixir 1.3, конструкция `with/1` также начала поддерживать `else`:
+
+
+```elixir
+import Integer
+
+m = %{a: 1, c: 3}
+
+a =
+  with {:ok, number} <- Map.fetch(m, :a),
+       true <- is_even(number) do
+    IO.puts("#{number} divided by 2 is #{div(number, 2)}")
+    :even
+  else
+    :error ->
+      IO.puts("We don't have this item in map")
+      :error
+
+    _ ->
+      IO.puts("It is odd")
+      :odd
+  end
+```
+
+Это помогает структурировать код обработки ошибок с помощью сопоставления с образцом в общем блоке-обработчике. Значение, которое туда передаётся — первое же выражение, которое не сопоставилось в основном теле `with`.

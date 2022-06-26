@@ -1,0 +1,110 @@
+# Concorrência
+
+## Processos
+
+Processos no Erlang VM são leves e executam em todas as CPUs. Enquanto eles podem parecer como threads nativas, eles são bastantes simples e não é incomum ter milhares de processos concorrentes em uma aplicação Elixir.
+
+A forma mais fácil para criar um novo processo é o `spawn`, que pode receber tanto uma função nomeada quanto anônima. Quando criamos um novo processo ele retorna um _Process Identifier_ ou PID, para exclusivamente identificá-lo dentro de nossa aplicação.
+
+Para iniciar criaremos um módulo e definiremos uma função que gostaríamos de executar:
+
+
+```elixir
+ Example.add(2, 3)
+```
+
+Para executar a função de forma assíncrona usamos `spawn/3`:
+
+
+```elixir
+ spawn(Example, :add, [2, 3])
+```
+
+### Passagem de mensagem
+
+Para comunicar-se, os processos dependem de passagem de mensagens. Há dois componentes principais para isso: `send/2` e `receive`. A função `send/2` nos permite enviar mensagens para PIDs. Para recebê-las, usamos a função `receive` com pattern matching para selecionar as mensagens. Se nenhum padrão coincidir com a mensagem recebida, a execução continua ininterrupta.
+
+
+```elixir
+ pid = spawn(Example, :listen, [])
+```
+
+```elixir
+ send pid, {:ok, "hello"}
+```
+
+```elixir
+ send pid, :ok
+```
+
+Você pode notar que a função `listen/0` é recursiva, isso permite que nosso processo receba múltiplas mensagens. Sem recursão nosso processo teria saído depois de receber a primeira mensagem.
+
+### Vinculando Processos
+
+Um problema com `spawn` é saber quando um processo falha. Para isso, precisamos vincular nossos processos usando `spawn_link`. Dois processos vinculados receberão notificações de saída um do outro:
+
+
+```elixir
+ spawn(Example, :explode, [])
+```
+
+```elixir
+ spawn_link(Example, :explode, [])
+```
+
+Em determinados momentos não queremos que nosso processo vinculado falhe o atual. Para isso nós precisamos interceptar as saídas usando `Process.flag/2`. Ela usa a função do erlang [process_flag/2](http://erlang.org/doc/man/erlang.html#process_flag-2) para a flag `trap_exit`. Quando interceptando saídas (`trap_exit` é definida como `true`), sinais de saída são recebidos como uma tupla de mensagem: `{:EXIT, from_pid, reason}`.
+
+
+```elixir
+ Example.run
+```
+
+### Monitorando processos
+
+E se não queremos vincular dois processos, mas continuar a sermos informados? Para isso, podemos usar o monitoramento de processos com `spawn_monitor`. Quando monitoramos um processo, nós recebemos uma mensagem informando se o processo falhou, sem afetar nosso processo atual nem necessitar explicitamente interceptar a saída.
+
+
+```elixir
+ Example.run
+```
+
+## Agentes
+
+Agentes são uma abstração acerca de processos em segundo plano que mantêm estado. Podemos acessá-los de outros processos dentro de nossa aplicação ou nó. O estado do nosso Agente é definido como valor de retorno de nossa função:
+
+
+```elixir
+ {:ok, agent} = Agent.start_link(fn -> [1, 2, 3] end)
+```
+
+```elixir
+ Agent.update(agent, fn (state) -> state ++ [4, 5] end)
+```
+
+```elixir
+ Agent.get(agent, &(&1))
+```
+
+Quando nomeamos um Agente podemos referenciar seu nome ao invés de seu PID:
+
+
+```elixir
+ Agent.start_link(fn -> [1, 2, 3] end, name: Numbers)
+```
+
+```elixir
+ Agent.get(Numbers, &(&1))
+```
+
+## Tarefas
+
+Tarefas fornecem uma forma para executar uma função em segundo plano e posteriormente recuperar seu valor. Elas podem ser particularmente úteis ao manusear operações custosas, sem bloquear a execução do aplicativo.
+
+
+```elixir
+ task = Task.async(Example, :double, [2000])
+```
+
+```elixir
+ Task.await(task)
+```

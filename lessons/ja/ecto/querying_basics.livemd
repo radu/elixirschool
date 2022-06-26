@@ -1,0 +1,297 @@
+# クエリ
+
+このレッスンでは、 `Friends` アプリと [前のレッスン](/ja/lessons/ecto/associations) で設定した映画ドメインを引き続き作成します。
+
+## Ecto.Repo によるレコードのフェッチ
+
+Postgresデータベースのようなデータストアに対してマップするEctoの "レポジトリ" を思い出してください。
+データベースに対する全てのコミュニケーションは、このレポジトリを使用して行われます。
+
+いくつかの関数の助けを借りることで、 `Friends.Repo` に対してシンプルなクエリを直接実行することができます。
+
+### IDによるレコードのフェッチ
+
+`Repo.get/3` 関数を使って与えられたIDを持つレコードをデータベースからフェッチすることができます。この関数には2つの引数が必要です。 "クエリ可能な" データ構造体とデータベースから取得するレコードのIDです。これは、レコードを見つけた場合、そのレコードを表す構造体を返します。レコードが見つからない場合には `nil` を返します。
+
+例を見てみましょう。下のコードは、1のIDを持つ映画(movie)を取得します:
+
+
+```elixir
+ alias Friends.{Repo, Movie}
+```
+
+```elixir
+ Repo.get(Movie, 1)
+```
+
+`Repo.get/3` に渡した1つ目の引数は `Movie` モジュールです。 `Movie` は `Ecto.Schema` モジュールを使い、自身のデータ構造体のためにスキーマを定義しているので "クエリ可能" です。これによって `Movie` は `Ecto.Queryable` プロトコルにアクセスすることができます。このプロトコルはデータ構造体を `Ecto.Query` へと変換します。Ectoクエリはレポジトリからデータを取得するために使用されます。クエリの詳細は後に説明します。
+
+### 属性によるレコードのフェッチ
+
+`Repo.get_by/3` 関数で与えられた条件を満たすレコードをフェッチすることもできます。この関数は2つの引数を必要とします。 "クエリ可能な" データ構造体とクエリをしたい条件です。 `Repo.get_by/3` はレポジトリから1つの結果を返します。例を見てみましょう:
+
+
+```elixir
+ Repo.get_by(Movie, title: "Ready Player One")
+```
+
+より複雑なクエリを書きたい、あるいは特定の条件を満たす _全ての_ レコードを取得したい場合は、 `Ecto.Query` が必要です。
+
+## Ecto.Query によるクエリの作成
+
+`Ecto.Query` モジュールはクエリDSLを提供しており、これによってアプリケーションのレポジトリからデータを取り出すクエリを書くことができます。
+
+### Ecto.Query.from/2 を使用したKeyword-basedクエリの作成
+
+`Ecto.Query.from/2` マクロを使用してクエリを作ることができます。この関数は2つの引数を取ります。式と任意のキーワードリストです。レポジトリから全ての映画を選択する最も簡単なクエリを作ってみましょう。
+
+
+```elixir
+ import Ecto.Query
+```
+
+```elixir
+ query = from(Movie)
+```
+
+クエリを実行するためには、 `Repo.all/2` 関数を使用します。この関数はEctoクエリの必須の引数を取り、クエリの条件を満たす全てのレコードを返します。
+
+
+```elixir
+ Repo.all(query)
+```
+
+#### from によるBindinglessなクエリの作成
+
+上の例では、SQLステートメントの最も楽しい部分がありません。特定のフィールドのみを参照したり、何らかの条件でレコードをフィルタリングしたりすることがよくあります。タイトルが `"Ready Player One"` である全ての映画の `title` と `tagline` を取得してみましょう。
+
+
+```elixir
+ query = from(Movie, where: [title: "Ready Player One"], select: [:title, :tagline])
+```
+
+```elixir
+ Repo.all(query)
+```
+
+返ってくる構造体には `tagline` と `title` フィールドのみが設定されていることに注意してください - これは `select:` の結果です。
+
+このようなクエリは、bindingを必要としないほど単純であるため、 *bindingless* と呼ばれます。
+
+#### クエリでのBinding
+
+これまで、 `from` マクロの最初の引数として `Ecto.Queryable` プロトコル（例： `Movie`）を実装するモジュールを使用しました。しかしながら、このような `in` 式も利用することができます。
+
+
+```elixir
+ query = from(m in Movie)
+```
+
+このような場合には、 `m` を *binding* と呼びます。クエリの他の部分からモジュールが参照できるため、Bindingは非常に便利です。 `id` が `2` より小さい全ての映画のタイトルを選択してみましょう:
+
+
+```elixir
+ query = from(m in Movie, where: m.id < 2, select: m.title)
+```
+
+```elixir
+ Repo.all(query)
+```
+
+ここで非常に重要なことは、クエリの出力がどのように変化したかです。`select:` 部分のbindingで *式* を使用すると、選択したフィールドが返される方法を正確に指定できます。例えば、タプルを指定できます。
+
+
+```elixir
+ query = from(m in Movie, where: m.id < 2, select: {m.title})
+```
+
+```elixir
+ Repo.all(query)
+```
+
+データ構造を参照する必要がある場合は、常に単純なbindinglessクエリから始めて、bindingを導入することをお勧めします。クエリのbindingの詳細については、[Ecto documentation](https://hexdocs.pm/ecto/Ecto.Query.html#module-query-expressions) を参照してください。
+
+### マクロクエリ
+
+上記の例では、 `from` マクロ内でキーワード `select:` と `where:` を使用してクエリを作成しました。これらは、*keyword-basedのクエリ* と呼ばれます。ただし、クエリを作成する別の方法もあります。マクロベースのクエリです。Ectoは、`select/3` や `where/3` のような全てのキーワードに対してマクロを提供します。各マクロは、*queryable* な値、*明示的なbindingのリスト*、およびアナログなキーワードに提供するのと同じ式を受け入れます:
+
+
+```elixir
+ query = select(Movie, [m], m.title)
+```
+
+```elixir
+ Repo.all(query)
+```
+
+マクロの良いところは、パイプで非常にうまく機能することです。
+
+
+```elixir
+ Movie \
+```
+
+改行後も書き込みを続けるには、 `\` を使用することに注意してください。
+
+### 埋め込み値による where の使用
+
+where句において埋め込み値やElixirの式を使うためには、 `^` 、つまりピン演算子を使う必要があります。これによって値を再束縛するのではなく、変数に値を _固定する_ ことで、その固定された値を参照することが可能になります。
+
+
+```elixir
+ title = "Ready Player One"
+```
+
+```elixir
+ query = from(m in Movie, where: m.title == ^title, select: m.tagline)
+```
+
+```elixir
+ Repo.all(query)
+```
+
+### 最初と最後のレコードの取得
+
+`Ecto.Query.first/2` と `Ecto.Query.last/2` 関数を使って、レポジトリの最初と最後のレコードをフェッチすることができます。
+
+まずは、 `first/2` 関数を使ったクエリ式を書いてみます:
+
+
+```elixir
+ first(Movie)
+```
+
+次に、そのクエリを `Repo.one/2` 関数に渡して結果を取得します:
+
+
+```elixir
+ Movie |> first() |> Repo.one()
+```
+
+`Ecto.Query.last/2` 関数も同じように使います:
+
+
+```elixir
+ Movie |> last() |> Repo.one()
+```
+
+## 関連したデータのクエリ
+
+### プリロード
+
+`belongs_to` 、 `has_many` 、そして `has_one` マクロからの公開する関連レコードにアクセスできるようにするために、関連したスキーマを _プリロード_ する必要があります。
+
+関連する俳優を映画に問い合わせるとどうなるかを見てみましょう。
+
+
+```elixir
+ movie = Repo.get(Movie, 1)
+```
+
+```elixir
+ movie.actors
+```
+
+プリロードしない限り、それらの関連したデータにアクセスすることはできません。Ectoを使ってレコードをプリロードするにはいくつかの方法があります。
+
+#### 2つのクエリによるプリロード
+
+次のクエリは _独立した_ クエリで関連したレコードをプリロードします。
+
+
+```elixir
+ import Ecto.Query
+```
+
+```elixir
+ Repo.all(from m in Movie, preload: [:actors])
+```
+
+上のコードでは_2つの_データベースクエリが実行されることがわかります。1つは全ての映画を、もう1つは全ての俳優を映画IDとともに取得しています。
+
+#### 1つのクエリによるプリロード
+
+私たちは次のようにデータベースクエリを削減することができます。
+
+
+```elixir
+ query = from(m in Movie, join: a in assoc(m, :actors), preload: [actors: a])
+```
+
+```elixir
+ Repo.all(query)
+```
+
+これによって、データベースへの問い合わせを1回にすることができます。また、同じクエリで映画と関連する俳優の両方を選択してフィルタ処理できるという利点もあります。例えば次のように、このアプローチによって `join` ステートメントを使用して特定の条件を満たす俳優を持つ全ての映画を取得することができます:
+
+
+```elixir
+Repo.all from m in Movie,
+  join: a in assoc(m, :actors),
+  where: a.name == "John Wayne",
+  preload: [actors: a]
+```
+
+joinステートメントについて、もっと詳細を見てみましょう。
+
+#### フェッチされたレコードのプリロード
+
+データベースから取得したレコードの関連スキーマをプリロードすることもできます。
+
+
+```elixir
+ movie = Repo.get(Movie, 1)
+```
+
+```elixir
+ movie = Repo.preload(movie, :actors)
+```
+
+これで映画の俳優を参照することができます:
+
+
+```elixir
+ movie.actors
+```
+
+### joinステートメントの使用
+
+`Ecto.Query.join/5` 関数によってjoinステートメントを含むクエリを実行することができます。
+
+
+```elixir
+ alias Friends.Character
+```
+
+```elixir
+ query = from m in Movie,
+```
+
+```elixir
+ Repo.all(query)
+```
+
+`on` 式にはキーワードリストを使うこともできます:
+
+
+```elixir
+from m in Movie,
+  join: c in Character,
+  on: [id: c.movie_id], # keyword list
+  where: c.name == "Wade Watts",
+  select: {m.title, c.name}
+```
+
+上の例では、Ectoスキーマを `m in Movie` で結合しています。また、Ectoクエリについても結合することができます。映画テーブルが、1から5の範囲の評価を格納するカラム `stars` を持っているとしましょう。
+
+
+```elixir
+movies = from m in Movie, where: [stars: 5]
+from c in Character,
+  join: ^movies,
+  on: [id: c.movie_id], # keyword list
+  where: c.name == "Wade Watts",
+  select: {m.title, c.name}
+```
+
+EctoクエリDSLは、複雑なデータベースクエリを作るために必要な全てを提供する強力なツールです。このイントロダクションでは、クエリを始めるための基本的な構成要素を提供しています。

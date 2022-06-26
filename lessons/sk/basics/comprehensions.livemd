@@ -1,0 +1,94 @@
+# Comprehensions
+
+## Základy
+
+Častým použitím comprehensions je stručnejší zápis iterovania nad `Enum` a `Stream`. Pozrime sa na jednoduchý príklad:
+
+
+```elixir
+ list = [1, 2, 3, 4, 5]
+```
+
+```elixir
+ for x <- list, do: x*x
+```
+
+Vidíme, že je použité kľúčové slovo `for` nasledované generátorom. Čo je generátor? Je to výraz, ktorý generuje vždy ďalší prvok pre každú novú iteráciu. V našom príklade to je `x <- [1, 2, 3, 4, 5]`.
+
+Samozrejme, comprehensions nie sú limitované na zoznamy, môžeme ich použiť s ľubovoľnou kolekciou:
+
+
+```elixir
+ for {_key, val} <- [one: 1, two: 2, three: 3], do: val
+```
+
+```elixir
+ for {k, v} <- %{"a" => "A", "b" => "B"}, do: {k, v}
+```
+
+```elixir
+ for <<c <- "hello">>, do: <<c>>
+```
+
+Ako ste si mohli všimnúť, generátory používajú pattern matching na priraďovanie hodnoty do premennej na ľavej strane. Ak sa nenájde zhoda (match), hodnota je ignorovaná a iterácia sa preskočí:
+
+
+```elixir
+ for {:ok, val} <- [ok: "Hello", error: "Unknown", ok: "World"], do: val
+```
+
+Môžeme dokonca použiť viacero generátorov - funguje to podobne, ako vnorené cykly:
+
+
+```elixir
+ list = [1, 2, 3, 4]
+```
+
+```elixir
+ for n <- list, times <- 1..n do
+```
+
+Na lepšiu ilustráciu použime funkciu `IO.puts` na zobrazenie oboch vygenerovaných hodnôt:
+
+
+```elixir
+ for n <- list, times <- 1..n, do: IO.puts "#{n} - #{times}"
+```
+
+Comprehensions sú stále len syntaktickým zjednodušením a mali by sme ich použitie vždy dobre zvážiť.
+
+## Filtre
+
+Filtre môžeme brať ako guard výrazy pre comprehensions. Keď filtrovací výraz vráti pre niektorú hodnotu `false` alebo `nil`, bude daná hodnota ignorovaná a v `do` bloku preskočená. Poďme iterovať cez rozsah čísel od 1 do 10 a extrahovať iba párne čísla. Použijeme funkciu `is_even/1` z modulu Integer na kontrolu, či je číslo párne alebo nie.
+
+
+```elixir
+ for x <- 1..10, is_even(x), do: x
+```
+
+Ako pri generátoroch, aj filtrov môžeme použiť naraz niekoľko - rozšírme rozsah čísel a potom filtrujme iba párne čísla ktoré sú zároveň deliteľné číslom 3.
+
+
+```elixir
+ for x <- 1..100,
+```
+
+## Použitie :into
+
+Čo ak chceme, aby výsledkom comprehension bolo niečo iné ako zoznam? Použijeme parameter `:into`! Tento parameter akceptuje ľubovoľnú štruktúru, ktorá implementuje protokol `Collectable`.
+
+S pomocou `:into` skúsme zmeniť zoznam kľúčových slov na mapu:
+
+
+```elixir
+ for {k, v} <- [one: 1, two: 2, three: 3], into: %{}, do: {k, v}
+```
+
+Keďže bitstringy implementujú protokol `Collectable`, môžeme ich pomocou comprehension s parametrom `:into` zmeniť na normálne reťazce:
+
+
+```elixir
+ for c <- [72, 101, 108, 108, 111], into: "", do: <<c>>
+```
+
+To je všetko! Comprehensions sú jednoduchým a stručným spôsobom, ako iterovať cez kolekcie.

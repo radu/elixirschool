@@ -1,0 +1,121 @@
+# Pattern matching (so trùng mẫu)
+
+## Match operator (Toán tử khớp)
+
+Bạn đã chuẩn bị tinh thần chưa? Trong Elixir, thực ra dấu = chính là match operator. Thông qua nó chúng ta có thể gán và sau đó so khớp giá trị, hãy cùng xem ví dụ sau:
+
+
+```elixir
+ x = 1
+```
+
+Bây giờ hãy thử với một ví dụ so khớp đơn giản sau:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Và thử với các kiểu tổ hợp:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Pin operator (Toán tử ghim)
+
+Chúng ta mới biết được rằng match operator đảm nhiệm phép gán khi vế trái của khớp chứa một biến. Trong một số trường hợp, với cách hoạt động này, variable rebinding (biến bị gán với một giá trị khác) là điều không mong muốn. Những lúc đó, chúng ta có pin operator: `^`.
+
+Khi pin (ghim) một biến thì ta so khớp giá trị hiện tại của nó chứ không phải là gán nó với một giá trị mới. Hãy xem cách chúng hoặt động:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 giới thiệu việc hỗ trợ pin (ghim) cho các khoá trong kiểu map và trong mệnh đề của hàm:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Một ví dụ về pin (ghim) trong một mệnh đề hàm:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```

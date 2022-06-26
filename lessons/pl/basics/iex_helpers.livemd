@@ -1,0 +1,142 @@
+# Powłoka IEx
+
+## Wstęp
+
+Gdy zaczynasz przygodę z Elixirem, to IEx jest twoim najlepszym przyjacielem. 
+Jest to REPL. Ma  jednak wiele dodatkowych cech, które ułatwiają pracę z istniejącym kodem, jak i tworzenie własnych rozwiązań.
+W tej lekcji omówimy te pomocne elementy.
+
+### Autouzupełnianie
+
+Gdy pracujemy z powłoką, to może się zdarzyć, że chcemy użyć modułu, którego nie znamy. 
+Funkcja autouzupełniania jest niezastąpiona, gdy chcemy rozeznać się w możliwościach takiego modułu. 
+Wystarczy po nazwie modułu postawić kropkę i nacisnąć `Tab`:
+
+
+```elixir
+ Map. # naciśnij Tab
+```
+
+I już wiemy jakie funkcje są dostępne wraz z ich arnością!
+
+### .iex.exs
+
+Za każdym razem, gdy uruchamiamy IEx, poszukuje on pliku `.iex.exs` w bieżącym katalogu. Jeżeli plik nie istnieje, to sprawdzany jest katalog domowy użytkownika (`~/.iex.exs`).
+
+Konfiguracja oraz funkcje zdefiniowane w tym pliku będą dostępne w powłoce IEx. Jeżeli zatem chcemy dodać kilka funkcji pomocniczych do IEx, to wystarczy otworzyć ten plik i wprowadzić zmiany.
+
+Dodajmy zatem moduł z kilkoma funkcjami pomocniczymi:
+
+
+```elixir
+defmodule IExHelpers do
+  def whats_this?(term) when is_nil(term), do: "Type: Nil"
+  def whats_this?(term) when is_binary(term), do: "Type: Binary"
+  def whats_this?(term) when is_boolean(term), do: "Type: Boolean"
+  def whats_this?(term) when is_atom(term), do: "Type: Atom"
+  def whats_this?(_term), do: "Type: Unknown"
+end
+```
+
+Teraz gdy uruchomimy IEx, będziemy mieli dostępny moduł `IExHelpers` od samego początku. Uruchommy zatem IEx i zobaczmy, jak działają nasze funkcje:
+
+
+```elixir
+ IExHelpers.whats_this?("a string")
+```
+
+```elixir
+ IExHelpers.whats_this?(%{})
+```
+
+```elixir
+ IExHelpers.whats_this?(:test)
+```
+
+Jak widać, nie musimy wykonywać żadnych dodatkowych, operacji w rodzaju importowania, IEx zrobił to za nas. 
+
+### h
+
+`h` to jedna z najprzydatniejszych funkcji w powłoce.
+Dzięki fantastycznemu wsparciu dla dokumentacji jako elementu języka, dzięki tej funkcji pomocniczej możemy dostać się do dokumentacji dowolnego kodu. Jest to banalnie proste:
+
+
+```elixir
+ h Enum
+```
+
+I teraz połączmy, to z funkcją autouzupełniania. Na przykład pierwszy raz korzystając z modułu `Map`:
+
+
+```elixir
+ h Map
+```
+
+```elixir
+ Map.
+```
+
+```elixir
+ h Map.merge/2
+```
+
+Jak widać, możemy nie tylko dostać się do dokumentacji modułu, ale też do dowolnej funkcji w tym module. W dodatku dokumentacja zazwyczaj zawiera przykłady użycia.
+
+### i
+
+Wykorzystajmy naszą nowo zdobytą wiedzę, by z pomocą `h` zapoznać się z możliwościami funkcji `i`:
+
+
+```elixir
+ h i
+```
+
+```elixir
+ i Map
+```
+
+Dowiedzieliśmy się kilku rzeczy o `Map` w tym, gdzie są pliki źródłowe i z jakich modułów korzysta. Jest to szczególnie użyteczne, gdy pracujemy z nieznanymi typami danych czy nowymi funkcjami. 
+
+I choć poszczególne sekcje mogą zawierać dużo informacji, to na pewnym wysokim poziomie możemy zebrać wiele istotnych informacji:
+
+- Jest on typu atomowego,
+- Gdzie jest kod źródłowy,
+- Wersja oraz opcje kompilacji,
+- Ogólny opis,
+- Jak się do niego dostać,
+- Do jakich modułów się odwołuje.
+
+To pozwala nam na zaoszczędzenie mnóstwa pracy i nie poruszamy się jak błędna owieczka.
+
+### r
+
+By zrekompilować dowolny moduł używamy funkcji `r`. Załóżmy, że zmieniliśmy jakiś kod i chcemy uruchomić nowo dodaną funkcję. Wszystko, co musimy zrobić, to zapisać nasze zmiany i zrekompilować je z użyciem `r`:  
+
+
+```elixir
+ r MyProject
+```
+
+### t
+
+`t` mówi nam jakie typy mamy dostępne w danym module:
+
+
+```elixir
+ t Map
+```
+
+I teraz już wiemy, że `Map` definiuje typy `key` i `value`. Gdy zajrzymy do kodu źródłowego modułu `Map`, zobaczymy:
+
+
+```elixir
+defmodule Map do
+# ...
+  @type key :: any
+  @type value :: any
+# ...
+```
+
+Jest to bardzo prosty przykład, który pokazuje, że klucze i wartości mogą być dowolnego typu. 
+
+Wykorzystując wszystkie te wbudowane elementy, możemy bardzo łatwo badać kod, bo dowiedzieć się jak działa. IEx to wydajne i niezawodne narzędzie dla programistów. Mając je w naszym arsenale nauka i tworzenie kodu może być jeszcze fajniejszą zabawą.

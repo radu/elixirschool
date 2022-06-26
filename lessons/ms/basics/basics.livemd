@@ -1,0 +1,287 @@
+# Asas
+
+## Penyediaan
+
+### Pemasangan Elixir
+
+Arahan-arahan pemasangan untuk setiap jenis OS boleh didapati di Elixir-lang.org di dalam panduan [Installing Elixir](http://elixir-lang.org/install.html).
+
+### Mod Interaktif
+
+Elixir disertakan dengan IEx, satu shell interaktif, yang membenarkan kita untuk menilai ekspresi Elixir.
+
+Untuk bermula, kita jalankan `iex`:
+
+	Erlang/OTP {{ site.erlang.OTP }} [erts-{{ site.erlang.erts }}] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+	Interactive Elixir ({{ site.elixir.version }}) - press Ctrl+C to exit (type h() ENTER for help)
+	iex>
+
+## Type Asas
+
+### Angka Bulat
+
+
+```elixir
+ 255
+```
+
+Sokongan untuk nombor-nombor binari, oktal dan heksadesimal disertakan secara lalai(default):
+
+
+```elixir
+ 0b0110
+```
+
+```elixir
+ 0o644
+```
+
+```elixir
+ 0x1F
+```
+
+### Nombor Apungan
+
+Dalam Elixir, nombor apungan memerlukan satu desimal selepas sekurang-kurangnya satu digit; mereka mempunyai 64 bit double precision dan menyokong penggunaan `e` untuk nombor eksponen:
+
+
+```elixir
+ 3.14
+```
+
+```elixir
+ .14
+```
+
+```elixir
+ 1.0e-10
+```
+
+
+### Boolean
+
+Elixir menyokong penggunaan `true` dan `false` sebagai boolean; kesemuanya bernilai `true` kecuali untuk nilai `false` dan `nil`:
+
+
+```elixir
+ true
+```
+
+```elixir
+ false
+```
+
+### Atom
+
+Atom ialah sejenis konstan yang nama mereka adalah merupakan nilai mereka.  Jika anda telah biasa dengan Ruby mereka adalah sinonim kepada Symbols:
+
+
+```elixir
+ :foo
+```
+
+```elixir
+ :foo == :bar
+```
+
+NOTA: Boolean `true` dan `false` adalah juga dari jenis atom `:true` dan `:false`.
+
+
+```elixir
+ is_atom(true)
+```
+
+```elixir
+ is_boolean(:true)
+```
+
+```elixir
+ :true === true
+```
+
+### Strings
+
+String di dalam Elixir adalah dienkod UTF-8 dan disempadankan dengan tanda petik(double quotes):
+
+
+```elixir
+ "Hello"
+```
+
+```elixir
+ "dziękuję"
+```
+
+String menyokong pemisah baris(line break) dan urutan escape(escape sequence):
+
+
+```elixir
+ "foo
+```
+
+```elixir
+ "foo\nbar"
+```
+
+## Operasi Asas
+
+### Arithmetik
+
+Elixir menyokong operator asas `+`, `-`, `*` dan `/` sebagaimana yang anda jangkakan.  Ianya penting untuk diambil perhatian bahawa `/` akan sentiasa dipulangkan sebagai nombor float:
+
+
+```elixir
+ 2 + 2
+```
+
+```elixir
+ 2 - 1
+```
+
+```elixir
+ 2 * 5
+```
+
+```elixir
+ 10 / 5
+```
+
+Jika anda memerlukan pembahagian integer atau baki pembahagian, Elixir membekalkan dengan dua fungsi untuk menjayakannya:
+
+
+```elixir
+ div(10, 5)
+```
+
+```elixir
+ rem(10, 3)
+```
+
+### Boolean
+
+Elixir membekalkan operator boolean `||`, `&&`, and `!`.  Mereka menyokong semua jenis type:
+
+
+```elixir
+ -20 || true
+```
+
+```elixir
+ false || 42
+```
+
+```elixir
+ 42 && true
+```
+
+```elixir
+ 42 && nil
+```
+
+```elixir
+ !42
+```
+
+```elixir
+ !false
+```
+
+Terdapat juga tiga operator tambahan yang mana argumen pertama _mesti_ sejenis boolean (`true` dan `false`):
+
+
+```elixir
+ true and 42
+```
+
+```elixir
+ false or true
+```
+
+```elixir
+ not false
+```
+
+```elixir
+ 42 and true
+```
+
+```elixir
+ not 42
+```
+
+### Perbandingan
+
+Elixir didatangkan dengan semua operator perbandingan yang kita biasa guna: `==`, `!=`, `===`, `!==`, `<=`, `<` dan `>`.
+
+
+```elixir
+ 1 > 2
+```
+
+```elixir
+ 1 != 2
+```
+
+```elixir
+ 2 == 2
+```
+
+```elixir
+ 2 <= 3
+```
+
+Untuk perbandingan ketat nombor-nombor integer dan float, gunakan `===`:
+
+
+```elixir
+ 2 == 2.0
+```
+
+```elixir
+ 2 === 2.0
+```
+
+Satu ciri penting Elixir ialah mana-mana dua bentuk jenis data boleh dibandingkan, ini adalah amat berguna ketika membuat penyusunan.  Kita tidak perlu menghafal susunan tetapi penting untuk diberikan perhatian:
+
+
+```elixir
+number < atom < reference < function < port < pid < tuple < map < list < bitstring
+```
+
+Ini boleh membawa kepada beberapa perbandingan yang menarik, dan sah, yang anda mungkin tidak akan jumpai dalam bahasa aturcara lain:
+
+
+```elixir
+ :hello > 999
+```
+
+```elixir
+ {:hello, :world} > [1, 2, 3]
+```
+
+### Interpolasi String
+
+Jika anda pernah menggunakan Ruby, interpolasi string dalam Elixir akan dikenali:
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello #{name}"
+```
+
+### Perangkaian String
+
+Perangkaian string menggunakan operator `<>`:
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello " <> name
+```

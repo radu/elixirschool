@@ -1,0 +1,121 @@
+# Pencocokan Pola
+
+## Match operator
+
+Siap untuk dibuat bingung? Dalam Elixir, operator `=` sebetulnya adalah operator pencocokan (match operator). Melalui operator pencocokan kita dapat menetapkan (assign) dan kemudian mencocokkan value, mari kita lihat:
+
+
+```elixir
+ x = 1
+```
+
+Sekarang mari coba pencocokan sederhana:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Mari coba dengan sebagian collection yang kita tahu:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2 | _] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Pin operator
+
+Kita baru saja pelajari bahwa operator pencocokan melakukan assignment ketika sisi kiri pencocokan berisi variabel. Dalam beberapa kasus perilaku ini, variable rebinding, tidak diinginkan. Untuk situasi semacam ini, kita punya pin operator: `^`.
+
+Ketika kita melakukan pin sebuah variabel kita mencocokkan terhadap value yang ada dan bukannya melakukan rebinding terhadap value yang baru. Mari lihat bagaimana ini terjadi:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 menambahkan dukungan pada pin dalam key dari map dan klausa fungsi:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Sebuah contoh pinning dalam klausa fungsi:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```

@@ -1,0 +1,110 @@
+# Konkurentnosť
+
+## Procesy
+
+Procesy v Erlang VM sú ľahké a dokážu používať všetky CPU. Môže sa zdať, že sa podobajú na natívne vlákna, ale sú jednoduchšie a nie je nevídané mať tisíce konkurentných procesov v Elixir aplikácii.
+
+Najjednoduchší spôsob ako vytvoriť nový proces je použiť funkciu `spawn`, ktorá potrebuje anonymnú alebo pomenovanú funkciu. Keď vytvoríme nový proces, vráti nám _Process Identifier_ alebo PID, ktorý jednoznačne identifikuje proces našej aplikácie.
+
+Na začiatok vytvoríme modul a definujeme funkciu, ktorú chceme spustiť:
+
+
+```elixir
+ Example.add(2, 3)
+```
+
+Keď chceme vyhodnotiť funkciu asynchrónne, použijeme `spawn/3`:
+
+
+```elixir
+ spawn(Example, :add, [2, 3])
+```
+
+### Posielanie správ
+
+Procesy sa spoliehajú na posielanie správ, ktoré im umožňuje medzi sebou komunikovať. To má dva komponenty: `send/2` a `receive`. Funkcia `send/2` nám dovoľuje poslať správy daným PID. Na prijatie správy použijeme `receive`, ktorý matchne správy. Ak sa nenájde žiadna vyhovujúca správa vykonávanie pokračuje bez prerušenia.
+
+
+```elixir
+ pid = spawn(Example, :listen, [])
+```
+
+```elixir
+ send pid, {:ok, "hello"}
+```
+
+```elixir
+ send pid, :ok
+```
+
+Možno si všimnete, že funkcia `listen/0` je rekurzívna, čo umožňuje našim procesom spracovávať viacero správ. Bez rekurzie by náš proces zanikol po prvej správe.
+
+### Prepojenie Procesov
+
+Jedným problémom so `spawn` je, že nevieme kedy proces spadol. Na to musíme naše procesy prepojiť pomocou `spawn_link`. Dva prepojené procesy dostanú jeden od druhého správu o tom že proces zanikol:
+
+
+```elixir
+ spawn(Example, :explode, [])
+```
+
+```elixir
+ spawn_link(Example, :explode, [])
+```
+
+Niekedy ale nechceme aby naše prepojené procesy zhodili náš aktuálny proces. Na to potrebujeme zachytiť zaniknutie procesu. Keď dostaneme správu o zaniknutí procesu, bude v tvare tuple: `{:EXIT, from_pid, reason}`.
+
+
+```elixir
+ Example.run
+```
+
+### Monitorovanie Procesov
+
+Čo ak nechceme prepojiť dva procesy, ale chceme o nich mať informácie? Na to môžeme použiť monitorovanie procesov s funkciou `spawn_monitor`. Keď monitorujeme proces dostaneme správu ak proces spadne bez toho aby spadol náš aktuálny proces alebo ak potrebujeme explicitne zachytiť zaniknutie procesu.
+
+
+```elixir
+ Example.run
+```
+
+## Agenti
+
+Agenti sú abstrakcia procesov na pozadí, ktoré si uchovávajú stav. Môžeme k nim pristupovať z iných procesov v našej aplikácii a node. Stav nášho Agenta je nastavený návratovou hodnotou našej funkcie:
+
+
+```elixir
+ {:ok, agent} = Agent.start_link(fn -> [1, 2, 3] end)
+```
+
+```elixir
+ Agent.update(agent, fn (state) -> state ++ [4, 5] end)
+```
+
+```elixir
+ Agent.get(agent, &(&1))
+```
+
+Keď pomenujeme Agenta, môžeme menom na neho odkazovať namiesto PID:
+
+
+```elixir
+ Agent.start_link(fn -> [1, 2, 3] end, name: Numbers)
+```
+
+```elixir
+ Agent.get(Numbers, &(&1))
+```
+
+## Tasky
+
+Tasky poskytujú spôsob ako vykonať funkciu na pozadí a získať jej návratovú hodnotu neskôr. Môžu byť veľmi užitočné najmä vtedy, keď vykonávame výpočtovo náročné operácie, pretože neblokujú vykonávanie samotnej aplikácie.
+
+
+```elixir
+ task = Task.async(Example, :double, [2000])
+```
+
+```elixir
+ Task.await(task)
+```

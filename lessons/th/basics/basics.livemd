@@ -1,0 +1,328 @@
+# พื้นฐาน
+
+## เริ่มต้น
+
+### ติดตั้ง Elixir
+
+ขั้นตอนการติดตั้งสำหรับแต่ละระบบปฏิบัติการสามารถเข้าไปดูในเว็บไซต์ elixir-lang.org ในส่วนของแนวทางการ[ติดตั้ง Elixir](http://elixir-lang.org/install.html)
+
+หลังจากติดตั้งสำเร็จ เราสามารถยืนยันเวอร์ชันที่ติดตั้งได้ง่ายๆ ดังนี้
+
+    $ elixir -v
+    Erlang/OTP {{ site.erlang.OTP }} [erts-{{ site.erlang.erts }}] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+    Elixir {{ site.elixir.version }}
+
+### ลองเล่นกับ Interactive Mode
+
+Elixir มาพร้อมกับ IEx ซึ่งเป็น interactive shell ที่เปิดโอกาสให้เราสามารถประมวลผลนิพจน์ (expression) ของภาษา Elixir ได้อย่างต่อเนื่อง
+
+มาเริ่มต้นกันด้วยการรัน `iex`
+
+    Erlang/OTP {{ site.erlang.OTP }} [erts-{{ site.erlang.erts }}] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+    Interactive Elixir ({{ site.elixir.version }}) - press Ctrl+C to exit (type h() ENTER for help)
+    iex>
+
+เอาล่ะ! ทีนี้ลองมาเริ่มจากนิพจน์ง่ายๆ กัน
+
+
+```elixir
+ 2+3
+```
+
+```elixir
+ 2+3 == 5
+```
+
+```elixir
+ String.length("The quick brown fox jumps over the lazy dog")
+```
+
+ไม่ต้องกังวลไปถ้ารู้สึกว่ายังไม่เข้าใจความหมายของทุกนิพจน์ แต่หวังว่าจะเข้าใจในแนวคิดของมันนะ
+
+## Data Type พื้นฐาน
+
+### Integers
+
+
+```elixir
+ 255
+```
+
+รองรับเลขฐาน 2 (binary), 8 (octal) และ 16 (hexadecimal) ด้วยในตัว
+
+
+```elixir
+ 0b0110
+```
+
+```elixir
+ 0o644
+```
+
+```elixir
+ 0x1F
+```
+
+### Floats
+
+ใน Elixir นั้น เลขทศนิยมต้องใส่จุดทศนิยมหลังตัวเลขอย่างน้อย 1 หลัก รูปแบบที่ใช้เก็บทศนิยมเป็นแบบ 64-bit double precision และรองรับ `e` สำหรับค่า exponential (ใช้เลขฐานมายกกำลัง เช่น 1.0e-10 มี 1.0 เป็นฐาน 10 ก็จะเป็น 1.0 * 10^-10 เป็นต้น)
+
+
+```elixir
+ 3.14
+```
+
+```elixir
+ .14
+```
+
+```elixir
+ 1.0e-10
+```
+
+
+### Booleans
+
+Elixir นั้นใช้ `true` และ `false` โดยนอกจาก `false` กับ `nil` แล้ว ค่าอื่นๆ นับว่ามีค่าเป็นจริง (truthy)
+
+
+```elixir
+ true
+```
+
+```elixir
+ false
+```
+
+### Atoms
+
+atom เป็นค่าคงที่ที่มีค่าเป็นชื่อของตัวมันเอง ถ้าเขียน Ruby มาก่อนล่ะก็ มันก็เหมือนกับ symbol นั่นแหละ
+
+
+```elixir
+ :foo
+```
+
+```elixir
+ :foo == :bar
+```
+
+ซึ่งจริงๆ แล้ว boolean `true` และ `false` นั้นก็เป็น atom `:true` และ `:false` ตามลำดับ
+
+
+```elixir
+ is_atom(true)
+```
+
+```elixir
+ is_boolean(:true)
+```
+
+```elixir
+ :true === true
+```
+
+ชื่อของ module ใน Elixir ก็เป็น atom อีกเช่นกัน เช่น `MyApp.MyModule` เป็น atom แม้ว่าจะไม่เคยประกาศ module นี้มาก่อนเลยก็ตาม
+
+
+```elixir
+ is_atom(MyApp.MyModule)
+```
+
+นอกจากนี้ atom ยังถูกใช้ในการอ้างอิงถึง module ใน library ที่เขียนด้วย Erlang รวมถึง module ใน Erlang เองด้วย
+
+
+```elixir
+ :crypto.strong_rand_bytes 3
+```
+
+### Strings
+
+string ใน Elixir นั้นเข้ารหัสด้วย UTF-8 และใช้อัญประกาศคู่ (double quote) ในการประกาศ
+
+
+```elixir
+ "Hello"
+```
+
+```elixir
+ "dziękuję"
+```
+
+string รองรับการขึ้นบรรทัดใหม่ และ escape sequences
+
+
+```elixir
+ "foo
+```
+
+```elixir
+ "foo\nbar"
+```
+
+Elixir ยังมี data type ที่ซับซ้อนกว่าที่กล่าวมาข้างต้น เราจะได้เรียนเพิ่มเติมตอนที่ไปถึงเรื่องของ [collections](/th/lessons/basics/collections) และ [functions](/th/lessons/basics/functions)
+
+## Operation พื้นฐาน
+
+### Arithmetic
+
+คงพอจะเดากันออกว่า Elixir มี `+`, `-`, `*` และ `/` ให้ใช้ สิ่งหนึ่งที่อยากให้จำไว้คือ `/` จะคืนค่าเป็น float เสมอ
+
+
+```elixir
+ 2 + 2
+```
+
+```elixir
+ 2 - 1
+```
+
+```elixir
+ 2 * 5
+```
+
+```elixir
+ 10 / 5
+```
+
+หากว่าอยากได้ผลหารเป็นจำนวนเต็ม หรือหารเอาเศษ Elixir มีฟังก์ชัน `div` และ `rem` (rem น่าจะมาจาก division remainder คือเศษจากการหาร) ให้ใช้งานตามลำดับ
+
+
+```elixir
+ div(10, 5)
+```
+
+```elixir
+ rem(10, 3)
+```
+
+### Boolean
+
+Elixir มี `||`, `&&` และ `!` เป็น boolean operators ซึ่งสามารถใช้ได้กับทุกๆ type อย่างที่กล่าวไปแล้วว่า นอกจาก `nil` และ `false` แล้ว ทุกๆ ค่าจากมุมมองของ boolean จะมีค่าเป็นจริง (truthy)
+
+
+```elixir
+ -20 || true
+```
+
+```elixir
+ false || 42
+```
+
+```elixir
+ 42 && true
+```
+
+```elixir
+ 42 && nil
+```
+
+```elixir
+ !42
+```
+
+```elixir
+ !false
+```
+
+นอกจากนี้ยังมี operator เพิ่มเติม ที่ argument ตัวแรกต้องเป็น boolean (`true` หรือ `false`) เสมอ
+
+
+```elixir
+ true and 42
+```
+
+```elixir
+ false or true
+```
+
+```elixir
+ not false
+```
+
+```elixir
+ 42 and true
+```
+
+```elixir
+ not 42
+```
+
+### การเปรียบเทียบ
+
+Elixir มาพร้อมกับตัวเปรียบเทียบที่เราคุ้นเคย ซึ่งก็คือ `==`, `!=`, `===`, `!==`, `<=`, `>=`, `<`, และ `>`.
+
+
+```elixir
+ 1 > 2
+```
+
+```elixir
+ 1 != 2
+```
+
+```elixir
+ 2 == 2
+```
+
+```elixir
+ 2 <= 3
+```
+
+สำหรับการเปรียบเทียบที่เข้มงวดระหว่าง integers กับ floats ให้ใช้ `===`
+
+
+```elixir
+ 2 == 2.0
+```
+
+```elixir
+ 2 === 2.0
+```
+
+คุณสมบัติอย่างหนึ่งที่สำคัญของ Elixir คือ type ที่ต่างกัน สามารถนำมาเปรียบเทียบกันได้ ซึ่งมีประโยชน์โดยเฉพาะในการเรียงลำดับ
+ไม่จำเป็นต้องท่องจำลำดับก็ได้ แต่อยากให้รู้เอาไว้ว่ามันมีตัวตนอยู่นะ
+
+
+```elixir
+number < atom < reference < function < port < pid < tuple < map < list < bitstring
+```
+
+ซึ่งลำดับข้างต้นทำให้มีการเปรียบเทียบที่น่าสนใจเกิดขึ้น ซึ่งคงจะไม่เจอในภาษาอื่นๆ
+
+
+```elixir
+ :hello > 999
+```
+
+```elixir
+ {:hello, :world} > [1, 2, 3]
+```
+
+### การสอดแทรก string
+
+หากเคยเขียน Ruby มาก่อน ก็คงจะรู้สึกว่าการสอดแทรก string (string interpolation) ใน Elixir นั้นหน้าตาคุ้นๆ
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello #{name}"
+```
+
+### การต่อ string
+
+เราสามารถนำ string มาต่อกันได้โดยใช้เครื่องหมาย `<>`
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello " <> name
+```

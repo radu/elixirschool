@@ -1,0 +1,127 @@
+# 模式比對
+
+## 比對 (Match) 運算子
+
+你準備好了嗎? 在 Elixir 中，`=` 運算子實際上是一個比對運算子，與代數中的等號相當。使用它整個表達式將變成一個等式，並且讓 Elixir 將左邊的值與右邊的值進行比對。如果比對成功，則回傳等式的值。否則，它會回傳一個錯誤。讓我們來看看：
+
+
+```elixir
+ x = 1
+```
+
+現在來看一下簡單的比對例子：
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+接著試用在我們知道的集合例子：
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2 | _] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Pin 運算子
+
+當比對的左側包含變數時，比對運算子將執行賦值。在某些情況下，這種變數重新宣告 (rebinding) 行為是我們不希望的。而對於這些情況，我們使用 pin 運算子： `^`。
+
+當我們固定 (pin) 一個變數時，我們會比對現有的值，而不是重新宣告一個新值。現在來看看這是如何實現的：
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 在映射鍵值和函數子句中介紹了將支援固定 (pin) 操作：
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+一個在函數子句中的固定 (pinning) 例子：
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+
+```elixir
+ greeting
+```
+
+注意在 `"Mornin'"` 中的例子中，`greeting` 重新分配給 `"Mornin'"` 只發生在函數內部。函數 `greeting` 之外仍然是 `"Hello"`。

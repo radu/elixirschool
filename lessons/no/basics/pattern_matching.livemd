@@ -1,0 +1,122 @@
+# Mønstersammenligning
+
+## Sammenligningsoperatoren (Match Operator)
+
+Operatoren `=` er i Elixirs tilfelle en sammenligningsoperator, og vi bruker den til å tildele og matche verdier. La oss se på noen eksempler:
+
+
+```elixir
+ x = 1
+```
+
+La oss prøve med en enkel sammenligning:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+La oss nå prøve med noen av kolleksjonene vi allerede er kjente med:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Festeoperatoren (Pin Operator)
+
+Hva vi nettopp lærte, er at sammenligningsoperatoren tildeler når venstre siden av en sammenligning er en variabel. I noen tilfeller er dette uønsket, og vi kan da benytte oss av festeoperatoren: `^`.
+Når vi fester en variabel sammenligner vi den med den eksisterende verdien uten å binde variabelen til en ny verdi. La oss se hvordan dette fungerer:
+
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 introduserte støtte for festing i kartnøkler og funksjonsklausuler:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Et eksempel av festing i funksjonsklausuler:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+

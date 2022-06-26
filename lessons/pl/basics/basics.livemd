@@ -1,0 +1,340 @@
+# Podstawy
+
+## Przygotowanie środowiska
+
+### Instalacja
+
+Proces instalacji środowiska dla poszczególnych systemów operacyjnych jest opisany, w języku angielskim, na stronie elixir-lang.org w sekcji [Installing Elixir](http://elixir-lang.org/install.html).
+
+Po zakończeniu procesu instalacji możemy w łatwy sposób sprawdzić, którą wersję zainstalowaliśmy:
+
+    % elixir -v
+    Erlang/OTP {{ site.erlang.OTP }} [erts-{{ site.erlang.erts }}] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+    Elixir {{ site.elixir.version }}
+
+### Tryb interaktywny
+
+W Elixirze dostępna jest interaktywna powłoka `iex`, która pozwala nam na bieżąco uruchamiać kod w konsoli.
+
+By ją uruchomić, wpisz w wierszu poleceń `iex`:
+
+	Erlang/OTP {{ site.erlang.OTP }} [erts-{{ site.erlang.erts }}] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+	Interactive Elixir ({{ site.elixir.version }}) - press Ctrl+C to exit (type h() ENTER for help)
+	iex>
+
+Uwaga: W Windows PowerShell musisz wpisać `iex.bat`.
+
+Spróbujmy wykonać kilka prostych operacji:
+
+
+```elixir
+ 2+3
+```
+
+```elixir
+ 2+3 == 5
+```
+
+```elixir
+ String.length("The quick brown fox jumps over the lazy dog")
+```
+
+Nie martw się, jeśli nie rozumiesz jeszcze wszystkich wyrażeń.
+Mamy nadzieję, że zrozumiesz ideę.
+
+## Podstawowe typy danych
+
+### Liczby całkowite
+
+ang. _integer_
+
+
+```elixir
+ 255
+```
+
+Elixir pozwala też na używanie liczb w notacji binarnej, ósemkowej i szesnastkowej:
+
+
+```elixir
+ 0b0110
+```
+
+```elixir
+ 0o644
+```
+
+```elixir
+ 0x1F
+```
+
+### Liczby zmiennoprzecinkowe
+
+W Elixirze liczby zmiennoprzecinkowe (ang. _float_) oznaczamy pojedynczą kropką; mają one 64-bitową precyzję oraz możemy użyć notacji z `e` do wyrażenia potęg:
+
+
+```elixir
+ 3.14
+```
+
+```elixir
+ .14
+```
+
+```elixir
+ 1.0e-10
+```
+
+
+### Wartości logiczne
+
+Wartości logiczne (ang. _boolean_) są reprezentowane przez `true` dla prawdy i `false` dla fałszu; każda wartość, innego typu, będzie interpretowana jako prawda poza `false` i `nil`:
+
+
+```elixir
+ true
+```
+
+```elixir
+ false
+```
+
+### Atomy
+
+Atomy (ang. _atoms_) są to stałe, których nazwa jest jednocześnie ich wartością.
+Jeżeli masz doświadczenie z językiem Ruby, to atomy są tym samym co Symbole:
+
+
+```elixir
+ :foo
+```
+
+```elixir
+ :foo == :bar
+```
+
+Wartości `true` i `false` są też atomami odpowiednio`:true` i `:false`.
+
+
+```elixir
+ is_atom(true)
+```
+
+```elixir
+ is_boolean(:true)
+```
+
+```elixir
+ :true === true
+```
+
+Nazwy modułów w Elixirze również są atomami.
+Dla przykładu `MyApp.MyModule` jest poprawnym atomem nawet wtedy, gdy moduł o takiej nazwie nie istnieje.
+
+
+```elixir
+ is_atom(MyApp.MyModule)
+```
+
+Atomy służą też jako odwołania do bibliotek Erlanga, również tych wbudowanych.
+
+
+```elixir
+ :crypto.strong_rand_bytes 3
+```
+
+### Ciągi znaków
+
+Ciągi znaków (ang. _string_) w Elixirze są reprezentowane w kodowaniu UTF-8 i otoczone znakiem cudzysłowu:
+
+
+```elixir
+ "Hello"
+```
+
+```elixir
+ "dziękuję"
+```
+
+W ciągu znaków można używać zarówno znaków ucieczki, jak i tworzyć ciągi w wielu liniach:
+
+
+```elixir
+ "foo
+```
+
+```elixir
+ "foo\nbar"
+```
+
+Elixir zawiera również bardziej złożone typy danych.
+Więcej na ten temat dowiemy się, kiedy poznamy [kolekcje](/pl/lessons/basics/collections) i [funkcje](/pl/lessons/basics/functions).
+
+## Podstawowe operacje
+
+### Arytmetyczne
+
+Elixir oczywiście wspiera podstawowe operatory `+`, `-`, `*` i `/`.
+Ważne jest, że operacja `/` zawsze zwróci liczbę zmiennoprzecinkową:
+
+
+```elixir
+ 2 + 2
+```
+
+```elixir
+ 2 - 1
+```
+
+```elixir
+ 2 * 5
+```
+
+```elixir
+ 10 / 5
+```
+
+Jeżeli jednak potrzebujesz dzielenia liczb całkowitych albo reszty z dzielenia (tj. modulo), Elixir udostępnia dwie funkcje do obsługi tych działań:
+
+
+```elixir
+ div(10, 5)
+```
+
+```elixir
+ rem(10, 3)
+```
+
+### Logiczne
+
+Elixir posiada operatory logiczne `||`, `&&` i `!`.
+Wspierają one wszystkie typy:
+
+
+```elixir
+ -20 || true
+```
+
+```elixir
+ false || 42
+```
+
+```elixir
+ 42 && true
+```
+
+```elixir
+ 42 && nil
+```
+
+```elixir
+ !42
+```
+
+```elixir
+ !false
+```
+
+Istnieją też trzy operatory, których pierwszym argumentem _musi_ być wartość logiczna (`true` lub `false`):
+
+
+```elixir
+ true and 42
+```
+
+```elixir
+ false or true
+```
+
+```elixir
+ not false
+```
+
+```elixir
+ 42 and true
+```
+
+```elixir
+ not 42
+```
+
+Uwaga: Operatory `and` oraz `or` w języku Elixir są odwzorowywane na `andalso` i `orelse` w Erlangu.
+
+### Porównania
+
+Elixir posiada pełen zestaw operatorów porównania: `==`, `!=`, `===`, `!==`, `<=`, `>=`, `<` i `>`.
+
+
+```elixir
+ 1 > 2
+```
+
+```elixir
+ 1 != 2
+```
+
+```elixir
+ 2 == 2
+```
+
+```elixir
+ 2 <= 3
+```
+
+Dla ścisłego porównania liczb całkowitych i zmiennoprzecinkowych użyj operatora `===`:
+
+
+```elixir
+ 2 == 2.0
+```
+
+```elixir
+ 2 === 2.0
+```
+
+Ważną cechą Elixira jest to, że można porównać zmienne dowolnego typu, co jest szczególnie użyteczne przy sortowaniu.
+Nie musimy pamiętać kolejności przy sortowaniu, ale warto mieć to na uwadze:
+
+
+```elixir
+number < atom < reference < function < port < pid < tuple < map < list < bitstring
+```
+
+Pozwala to na stworzenie nietypowych, ale poprawnych konstrukcji porównań, które nie są dostępne w innych językach:
+
+
+```elixir
+ :hello > 999
+```
+
+```elixir
+ {:hello, :world} > [1, 2, 3]
+```
+
+### Interpolacja ciągów znaków
+
+Jeżeli używałeś Ruby to interpolacja ciągów znaków w Elixirze będzie wyglądać znajomo:
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello #{name}"
+```
+
+### Łączenie ciągów znaków
+
+By połączyć dwa ciągi znaków wystarczy użyć operatora `<>`:
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello " <> name
+```

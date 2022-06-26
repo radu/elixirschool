@@ -1,0 +1,94 @@
+# Comprehensions
+
+## Grundlagen
+
+Oftmals können comprehensions dazu genutzt werden, um knapperen Code für `Enum` und `Stream` Iterationen zu schreiben. Lass uns damit anfangen einen Blick auf eine einfache comprehension zu werfen, die wir danach aufdröseln:
+
+
+```elixir
+ list = [1, 2, 3, 4, 5]
+```
+
+```elixir
+ for x <- list, do: x*x
+```
+
+Das Erste, was wir bemerken, ist die Benutzung von `for` und ein generator. Was ist ein generator? Generator sind die `x <- [1, 2, 3, 4]` Ausdrücke in list comprehensions. Sie sind für die Erzeugung des nächstes Wertes verantwortlich.
+
+Glücklicherweise sind comprehensions nicht auf Listen festgelegt, sie funktionieren mit allen enumerables:
+
+
+```elixir
+ for {_key, val} <- [one: 1, two: 2, three: 3], do: val
+```
+
+```elixir
+ for {k, v} <- %{"a" => "A", "b" => "B"}, do: {k, v}
+```
+
+```elixir
+ for <<c <- "hello">>, do: <<c>>
+```
+
+Wie viele Dinge in Elixir stützen sich genereratos auf Pattern Matching, um die reingegebenen Werte mit der Variable auf der linken Seite zu vergleichen. Falls der Match nicht gefunden werden sollte, so wird dieser Wert ignoriert:
+
+
+```elixir
+ for {:ok, val} <- [ok: "Hello", error: "Unknown", ok: "World"], do: val
+```
+
+Es ist möglich mehrere generators zu benutzen, ähnlich verschachtelten Schleifen:
+
+
+```elixir
+ list = [1, 2, 3, 4]
+```
+
+```elixir
+ for n <- list, times <- 1..n do
+```
+
+Um die Schleife, die abläuft, besser zu verdeutlichen, lass uns `IO.puts` nutzen, um die zwei erzeugten Werte anzuzeigen:
+
+
+```elixir
+ for n <- list, times <- 1..n, do: IO.puts "#{n} - #{times}"
+```
+
+List comprehensions sind syntaktischer Zucker und sollten nur im angemessenen Fall benutzt werden.
+
+## Filter
+
+Du kannst dir Filter als eine Art guard für comprehensions vorstellen. Wenn ein gefilterter Wert `false` oder `nil` zurück gibt, wird er in die endgültige Liste nicht aufgenommen. Lass uns über eine range iterieren und nur die geraden Zahlen betrachten. Wir werden die `is_even/1` Funktion aus dem Integer-Modul nutzen, um zu überprüfen, ob ein Wert gerade ist oder nicht.
+
+
+```elixir
+ for x <- 1..10, is_even(x), do: x
+```
+
+Ähnlich wie generators können wir mehrere Filter benutzen. Lass uns unsere range erweitern und dann die Werte daraufhin aussortieren, dass sowohl gerade Zahlen als auch ungerade, die ohne Rest durch drei teilbar sind, zurück gegeben werden.
+
+
+```elixir
+ for x <- 1..100,
+```
+
+## :into
+
+Was, wenn wir etwas anderes als eine Liste herstellen wollen? Mit der `:into` Option können wir genau das tun! Als Faustregel akzeptiert `:into` jede Struktur, die das `Collectable`-Protokoll implementiert.
+
+Lass uns mit Hilfe von `:into` eine Liste aus einer Keyword Liste erzeugen:
+
+
+```elixir
+ for {k, v} <- [one: 1, two: 2, three: 3], into: %{}, do: {k, v}
+```
+
+Da bitstrings enumerable sind können wir list comprehensions und `:into` dazu nutzen, um Strings zu erzeugen:
+
+
+```elixir
+ for c <- [72, 101, 108, 108, 111], into: "", do: <<c>>
+```
+
+Das war's schon! List comprehensions sind ein einfacher Weg um auf knappe Art und Weise durch eine collection zu iterieren.

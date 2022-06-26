@@ -1,0 +1,121 @@
+# Pattern Matching
+
+## Match Operator
+
+Bereit für einen Hirnverdreher? In Elixir ist der `=`-Operator eigentlich ein match-Operator. Durch disen können wir Werte zuweisen und matchen:
+
+
+```elixir
+ x = 1
+```
+
+Lass uns nun versuchen etwas einfaches zu matchen:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Lass uns das mit ein paar der collections probieren, die wir kennen:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Pin Operator
+
+Wir haben gerade gelernt, dass der match-Operator eine Zuweisung ausführt, wenn die linke Seite des matches eine Variable beinhaltet. In manchen Fällen ist das Verhalten neu zu definieren unerwünscht. Für diese Fälle gibt es den pin-Operator: `^`.
+
+Wenn wir eine Variable pinnen matchen wir auf den vorhandenen Wert statt einen neuen zu definieren. Lass uns sehen, wie das funktioniert:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 hat Unterstützung für pins in map keys und Funktionsklauseln eingeführt:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Ein Beispiel von pinning einer Funktionsklausel:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```

@@ -1,0 +1,130 @@
+# Dopasowanie wzorców
+
+## Operator dopasowania
+
+Gotowi na niespodziankę? W Elixirze operator `=` to w rzeczywistości operator dopasowania, który można porównać do znaku równości w algebrze. Wykorzystanie go w zapisie powoduje, że wyrażenie zostanie potraktowane jak równanie. Elixir przypisze wartości po lewej stronie wartość po prawej. Jeżeli przypisanie się powiedzie, to zostanie zwrócony jego wynik. W przeciwnym przypadku zostanie zwrócony błąd. Spójrzmy:
+
+
+```elixir
+ x = 1
+```
+
+Spróbujmy zatem coś dopasować:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+A teraz spróbujmy tego samego ze znanymi nam już kolekcjami:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Operator przypięcia
+
+Jak już wiemy, operator dopasowania pozwala na przypisanie, jeżeli lewa strona wyrażenia zawiera zmienną.
+W niektórych przypadkach takie zachowanie jest niepożądane.
+Do ich obsługi wykorzystujemy operator przypięcia: `^`.
+
+Kiedy przypinamy zmienną, to dopasowujemy ją do istniejącej wartości, a nie tworzymy nową.
+Zobaczmy, jak to działa:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 wprowadził możliwość użycia przypięć w kluczach map i funkcjach:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Przykładowe przypięcie w funkcji:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+
+```elixir
+ greeting
+```
+
+W przykładzie z `"Mornin'"` zauważ, że zmiana przypisania `greeting` na `"Mornin'"` następuje jedynie wewnątrz funkcji. Poza nią `greeting` nadal ma wartość `"Hello"`.

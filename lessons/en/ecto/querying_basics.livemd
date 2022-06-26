@@ -1,0 +1,294 @@
+# Querying
+
+In this lesson, we'll continue building off the `Friends` app and the movie-cataloguing domain we set up in the [previous lesson](/en/lessons/ecto/associations).
+
+## Fetching Records with Ecto.Repo
+
+Recall that a "repository" in Ecto maps to a datastore such as our Postgres database.
+All communication to the database will be done using this repository.
+
+We can perform simple queries directly against our `Friends.Repo` with the help of a handful of functions.
+
+### Fetching Records by ID
+
+We can use the `Repo.get/3` function to fetch a record from the database given its ID. This function requires two arguments: a "queryable" data structure and the ID of a record to retrieve from the database. It returns a struct describing the record found, if any. It returns `nil` if no such record is found.
+
+Let's take a look at an example. Below, we'll get the movie with an ID of 1:
+
+
+```elixir
+ alias Friends.{Repo, Movie}
+```
+
+```elixir
+ Repo.get(Movie, 1)
+```
+
+Notice that the first argument we give to `Repo.get/3` is our `Movie` module. `Movie` is "queryable" because the module uses the `Ecto.Schema` module and defines a schema for its data structure. This gives `Movie` access to the `Ecto.Queryable` protocol. This protocol converts a data structure into an `Ecto.Query`. Ecto queries are used to retrieve data from a repository. More on queries later.
+
+### Fetching Records by Attribute
+
+We can also fetch records that meet a given criteria with the `Repo.get_by/3` function. This function requires two arguments: the "queryable" data structure and the clause with which we want to query. `Repo.get_by/3` returns a single result from the repository. Let's look at an example:
+
+
+```elixir
+ Repo.get_by(Movie, title: "Ready Player One")
+```
+
+If we want to write more complex queries, or if we want to return _all_ records that meet a certain condition, we need to use the `Ecto.Query` module.
+
+## Writing Queries with Ecto.Query
+
+The `Ecto.Query` module provides us with the Query DSL which we can use to write queries to retrieve data from the application's repository.
+
+### Keyword-based queries with Ecto.Query.from/2
+
+We can create a query with the `Ecto.Query.from/2` macro. This function takes in two arguments: an expression and an optional keyword list. Let's create the most simple query to select all of the movies from our repository:
+
+
+```elixir
+ import Ecto.Query
+```
+
+```elixir
+ query = from(Movie)
+```
+
+In order to execute our query, we use the `Repo.all/2` function. This function takes in a required argument of an Ecto query and returns all of the records that meet the conditions of the query.
+
+
+```elixir
+ Repo.all(query)
+```
+
+#### Bindingless queries with from
+
+The example above lacks the most fun parts of SQL statements. We often want to only query for specific fields or filter records by some condition. Let's fetch `title` and `tagline` of all movies that have `"Ready Player One"` title:
+
+
+```elixir
+ query = from(Movie, where: [title: "Ready Player One"], select: [:title, :tagline])
+```
+
+```elixir
+ Repo.all(query)
+```
+
+Please note that the returned struct only has `tagline` and `title` fields set – this is the result of our `select:` part.
+
+Queries like this are called *bindingless*, because they are simple enough to not require bindings.
+
+#### Bindings in queries
+
+So far we used a module that implements the `Ecto.Queryable` protocol (ex: `Movie`) as the first argument for `from` macro. However, we can also use `in` expression, like this:
+
+
+```elixir
+ query = from(m in Movie)
+```
+
+In such case, we call `m` a *binding*. Bindings are extremely useful, because they allow us to reference modules in other parts of the query. Let's select titles of all movies that have `id` less than `2`:
+
+
+```elixir
+ query = from(m in Movie, where: m.id < 2, select: m.title)
+```
+
+```elixir
+ Repo.all(query)
+```
+
+The very important thing here is how output of the query changed. Using an *expression* with a binding in `select:` part allows you to specify exactly the way selected fields will be returned. We can ask for a tuple, for example:
+
+
+```elixir
+ query = from(m in Movie, where: m.id < 2, select: {m.title})
+```
+
+```elixir
+ Repo.all(query)
+```
+
+It is a good idea to always start with a simple bindingless query and introduce a binding whenever you need to reference your data structure. More on bindings in queries can be found in [Ecto documentation](https://hexdocs.pm/ecto/Ecto.Query.html#module-query-expressions)
+
+
+### Macro-based queries
+
+In the examples above we used keywords `select:` and `where:` inside of `from` macro to build a query – these are so called *keyword-based queries*. There is, however, another way to compose queries – macro-based queries. Ecto provides macros for every keyword, like `select/3` or `where/3`. Each macro accepts a *queryable* value, *an explicit list of bindings* and the same expression you'd provide to its keyword analogue:
+
+
+```elixir
+ query = select(Movie, [m], m.title)
+```
+
+```elixir
+ Repo.all(query)
+```
+
+The good thing about macros is that they work very well with pipes:
+
+
+```elixir
+ Movie \
+```
+
+Note that to continue writing after the line break, use the character `\`.
+
+### Using where with Interpolated Values
+
+In order to use interpolated values or Elixir expressions in our where clauses, we need to use the `^`, or pin, operator. This allows us to _pin_ a value to a variable and refer to that pinned value, instead of re-binding that variable.
+
+
+```elixir
+ title = "Ready Player One"
+```
+
+```elixir
+ query = from(m in Movie, where: m.title == ^title, select: m.tagline)
+```
+
+```elixir
+ Repo.all(query)
+```
+
+### Getting the First and Last Records
+
+We can fetch the first or last records from a repository using the `Ecto.Query.first/2` and `Ecto.Query.last/2` functions.
+
+First, we'll write a query expression using the `first/2` function:
+
+
+```elixir
+ first(Movie)
+```
+
+Then we pass our query to the `Repo.one/2` function to get our result:
+
+
+```elixir
+ Movie |> first() |> Repo.one()
+```
+
+The `Ecto.Query.last/2` function is used in the same way:
+
+
+```elixir
+ Movie |> last() |> Repo.one()
+```
+
+## Querying For Associated data
+
+### Preloading
+
+In order to be able to access the associated records that the `belongs_to`, `has_many` and `has_one` macros expose to us, we need to _preload_ the associated schemas.
+
+Let's take a look to see what happens when we try to ask a movie for its associated actors:
+
+
+```elixir
+ movie = Repo.get(Movie, 1)
+```
+
+```elixir
+ movie.actors
+```
+
+We _can't_ access those associated characters unless we preload them. There are a few different ways to preload records with Ecto.
+
+#### Preloading With Two Queries
+
+The following query will preload associated records in a _separate_ query.
+
+
+```elixir
+ Repo.all(from m in Movie, preload: [:actors])
+```
+
+We can see that the above line of code ran _two_ database queries. One for all of the movies, and another for all of the actors with the given movie IDs.
+
+
+#### Preloading With One Query
+We can cut down on our database queries with the following:
+
+
+```elixir
+ query = from(m in Movie, join: a in assoc(m, :actors), preload: [actors: a])
+```
+
+```elixir
+ Repo.all(query)
+```
+
+This allows us to execute just one database call. It also has the added benefit of allowing us to select and filter both movies and associated actors in the same query. For example, this approach allows us to query for all movies where the associated actors meet certain conditions using a `join` statement. Something like:
+
+
+```elixir
+Repo.all from m in Movie,
+  join: a in assoc(m, :actors),
+  where: a.name == "John Wayne",
+  preload: [actors: a]
+```
+
+More on join statements in a bit.
+
+#### Preloading Fetched Records
+
+We can also preload the associated schemas of records that have already been queried from the database.
+
+
+```elixir
+ movie = Repo.get(Movie, 1)
+```
+
+```elixir
+ movie = Repo.preload(movie, :actors)
+```
+
+Now we can ask a movie for its actors:
+
+
+```elixir
+ movie.actors
+```
+
+### Using Join Statements
+
+We can execute queries that include join statements with the help of the `Ecto.Query.join/5` function.
+
+
+```elixir
+ alias Friends.Character
+```
+
+```elixir
+ query = from m in Movie,
+```
+
+```elixir
+ Repo.all(query)
+```
+
+The `on` expression can also use a keyword list:
+
+
+```elixir
+from m in Movie,
+  join: c in Character,
+  on: [id: c.movie_id], # keyword list
+  where: c.name == "Wade Watts",
+  select: {m.title, c.name}
+```
+
+In the example above, we are joining on an Ecto schema, `m in Movie`. We can also join on an Ecto query. Let's say our movies table has a column `stars`, where we store the "star rating" of the film, a number 1-5.
+
+
+```elixir
+movies = from m in Movie, where: [stars: 5]
+from c in Character,
+  join: ^movies,
+  on: [id: c.movie_id], # keyword list
+  where: c.name == "Wade Watts",
+  select: {m.title, c.name}
+```
+
+The Ecto Query DSL is a powerful tool that provides us with everything we need to make even complex database queries. With this introduction provides you with the basic building blocks to start querying.

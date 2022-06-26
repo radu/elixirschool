@@ -1,0 +1,129 @@
+# IEx Hjelpere
+
+## Overview
+
+Ettersom du starter og bruke Elixir, så vil IEx bli din bestevenn.
+Det er et REPL, men den har veldig mange avanserte funskjonaliteter som kan gjøre livet ditt enklere når du utforsker ny kode eller mens du selv utvikler. Det er et mangfold av innebyggede hjelpere som vi skal utforske.
+
+### Autofullføring
+
+Når du jobber i terminalen, så møter du nok ofte nye moduler som du ikke er kjent med.
+For å forstå hva som er tilgjengelig for deg, så er autofullføring funsjonaliteten fantastisk.
+Skriv inn modul navnet etterfulgt av en `.` og press `Tab`:
+
+
+```elixir
+ Map. # press Tab
+```
+
+og nå kjenner vi til modulen sine funksjoner og deres aritet.
+
+### .iex.exs
+
+Hver gang IEx starter så vil den se etter en `.iex.exs` konfigurasjons fil. Hvis den ikke er tilgjengelig i nåværende direktiv, så vil den sjekke brukerens hjemmedirektiv (`~/.iex.exs`) og ta den i bruk.
+
+La oss starte ved å legge til et bare hjelpe metoder:
+
+
+```elixir
+defmodule IExHelpers do
+  def whats_this?(term) when is_nil(term), do: "Type: Nil"
+  def whats_this?(term) when is_binary(term), do: "Type: Binary"
+  def whats_this?(term) when is_boolean(term), do: "Type: Boolean"
+  def whats_this?(term) when is_atom(term), do: "Type: Atom"
+  def whats_this?(_term), do: "Type: Unknown"
+end
+```
+
+Hvis vi starter IEx så vil vi ha IExHelpers modulen tilgjengelig for oss fra starten av. Åpne opp IEx og la oss prøve ut våre nye hjelpere:
+
+
+```elixir
+ IExHelpers.whats_this?("a string")
+```
+
+```elixir
+ IExHelpers.whats_this?(%{})
+```
+
+```elixir
+ IExHelpers.whats_this?(:test)
+```
+
+Som vi kan se, så trenger vi ikke å gjøre noe spesielt for å få tak i våre hjelpere, IEx håndterer det for oss.
+
+### h
+
+`h` er en av de mest brukbare verktøyene som Elixir terminalen gir oss. På grunn av språkets fantastiske førsteklasse støtte for dokumentasjons, så vil dokumentasjonene for hvilken som helst kode bli nådd ved bruk av denne hjelperen.
+For å se det i aksjon:
+
+
+```elixir
+ h Enum
+```
+
+Vi kan til og med kombinere dette med autofullføring funksjonalitetet av terminalen vår. Tenk deg at vi utforsker Map for første gang:
+
+
+```elixir
+ h Map
+```
+
+```elixir
+ Map.
+```
+
+```elixir
+ h Map.merge/2
+```
+
+Som vi kan se, så kunne vi se både funksjonene som var tilgjenglig i modulen, men også den individuelle dokumentasjonen for hver funksjon som inkluderer eksempeler.
+
+### i
+
+La oss ta i bruk det vi vet om `h` for å lære om `i` hjelperen:
+
+
+
+```elixir
+ h i
+```
+
+```elixir
+ i Map
+```
+
+Vi har en god del informasjon om `Map` inkludert hvor kildekoden er lagret og modulene den refererer. Dette er veldig brukbart når vi utforsker andres kode, moduler og funksjoner.
+
+De første linjene kan være kompakte, men på et høyt nivå så kan vi ekstrahere veldig relevant informasjon:
+
+- Det er en atom data type
+- Hvor du kan finne kildekoden
+- Versjonen og kompilasjons mulighetene
+- En generelle deskripsjon
+- Hvordan ta den i bruk
+- Hvilke andre moduler den refererer til
+
+Dette gir oss veldig mye å jobbe med.
+
+### r
+
+Hvis vi rekompilere en spesifikk modul så kan vi ta i bruk `r` hjelperen. La oss si at vi endret på noe kode og ønsker å ta i bruk den nye funksjonen som vi la til. For å gjøre det så må vi lagre våre endringer og rekompilere med r:
+
+
+```elixir
+ r MyProject
+```
+
+### t
+
+hjelperen `t` forteller oss om typer tilgjenglig i en gitt modul:
+
+
+```elixir
+ t Map
+```
+
+Dette er et enkelt eksempel, som påpeker at nøkler og verdier i følge implementasjonen kan være av en hvilken som helst type, men det er nyttig å vite.
+
+Ved å ta i bruk alle disse innebygde funksjonalitetene så kan vi enkelt utforske kode og lære mer om hvordan ting fungerer. IEx er et veldig robust verktøy som hjelper utviklerer. Med disse verktøyene i vår verktøykasse så kan utforsking og koding være enda mer morsomt!

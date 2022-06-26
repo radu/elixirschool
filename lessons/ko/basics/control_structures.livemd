@@ -1,0 +1,168 @@
+# 제어 구조
+
+## if 와 unless
+
+여러분은 이전에 `if/2`를 본 적이 있을 것입니다. 그리고 Ruby를 써 본 적이 있다면 `unless/2`에도 익숙하겠지요. Elixir에서도 이 둘은 거의 똑같이 동작하지만, 언어 구조가 아닌 매크로로서 정의되어 있습니다. [Kernel module](https://hexdocs.pm/elixir/Kernel.html)에서 이것들이 어떻게 정의되어 있는지 볼 수 있습니다.
+
+Elixir에서는 `nil`과 부울 값 `false`만이 거짓으로 간주됨을 유의하십시오.
+
+
+```elixir
+ if String.valid?("Hello") do
+```
+
+```elixir
+ if "a string value" do
+```
+
+`unless/2`를 쓰는 법은 `if/2`와 같지만 정반대로 동작합니다.
+
+
+```elixir
+ unless is_integer("hello") do
+```
+
+## case
+
+여러 패턴에 대해 매치해야 한다면 `case/2`를 이용할 수 있습니다.
+
+
+```elixir
+ case {:ok, "Hello World"} do
+```
+
+`_` 변수는 `case/2` 구문에서 중요한 요소입니다. 이것이 없으면 일치하는 패턴을 찾지 못했을 때 오류가 발생합니다.
+
+
+```elixir
+ case :even do
+```
+
+```elixir
+ case :even do
+```
+
+`_`를 "그 외의 모든 것"에 매치되는 `else`처럼 생각하십시오.
+
+`case/2`는 패턴 매칭에 의존하기 때문에 같은 규칙과 제약이 모두 적용됩니다. 기존의 변수에 매치하고자 한다면 핀 연산자 `^/1`를 사용해야 합니다.
+
+
+```elixir
+ pie = 3.14
+```
+
+```elixir
+ case "cherry pie" do
+```
+
+`case/2`의 또다른 멋진 점은 가드 구문을 지원한다는 것입니다.
+
+_이 예제는 Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#case) 가이드에서 그대로 가져온 것입니다._
+
+
+```elixir
+ case {1, 2, 3} do
+```
+[Expressions allowed in guard clauses](https://hexdocs.pm/elixir/guards.html#list-of-allowed-expressions) 공식 문서를 참고하십시오.
+
+## cond
+
+값이 아닌 조건식에 매치해야 할 때에는 `cond/1`를 사용하면 됩니다. 이는 다른 언어의 `else if`나 `elsif`와 유사합니다.
+
+_이 예제는 Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#cond) 가이드에서 그대로 가져온 것입니다._
+
+
+```elixir
+ cond do
+```
+
+`case/2`와 마찬가지로, `cond/1`도 일치하는 조건식이 없을 경우 에러를 발생시킵니다. 이를 해결하려면 `true` 조건식을 정의합니다.
+
+
+```elixir
+ cond do
+```
+
+## with
+
+특별한 구문인 `with/1`는 중첩된 `case/2` 구문이 쓰일만한 곳이나 깔끔하게 파이프 연산을 할 수 없는 상황에서 유용합니다. `with/1`식은 키워드, 제너레이터, 그리고 식으로 구성되어 있습니다.
+
+제너레이터에 대해서는 [List Comprehension](/ko/lessons/basics/comprehensions) 강의에서 살펴 볼 것이지만, 지금은 `<-`의 오른쪽을 왼쪽과 비교하기 위해 [패턴 매칭](/ko/lessons/basics/pattern_matching)을 사용한다는 것만 알아두시면 됩니다.
+
+일단 `with/1`의 간단한 예제를 보고 차근차근 알아보기로 합시다.
+
+
+```elixir
+ user = %{first: "Sean", last: "Callan"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+식의 매치가 실패하는 경우에는 매치되지 않은 값이 반환됩니다.
+
+
+```elixir
+ user = %{first: "doomspork"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+이제 `with/1`가 없는 더 큰 예제를 보고, 이것을 어떻게 리팩토링할 수 있는지 봅시다.
+
+
+```elixir
+case Repo.insert(changeset) do
+  {:ok, user} ->
+    case Guardian.encode_and_sign(user, :token, claims) do
+      {:ok, token, full_claims} ->
+        important_stuff(token, full_claims)
+
+      error ->
+        error
+    end
+
+  error ->
+    error
+end
+```
+
+`with/1`를 도입하면 더 짧으면서도 이해하기 쉬운 코드를 작성할 수 있습니다.
+
+
+```elixir
+with {:ok, user} <- Repo.insert(changeset),
+     {:ok, token, full_claims} <- Guardian.encode_and_sign(user, :token, claims) do
+  important_stuff(token, full_claims)
+end
+```
+
+
+Elixir 1.3부터 `with/1`구문에서 `else`를 사용할 수 있습니다.
+
+
+```elixir
+import Integer
+
+m = %{a: 1, c: 3}
+
+a =
+  with {:ok, res} <- Map.fetch(m, :a),
+       true <- is_even(res) do
+    IO.puts("Divided by 2 it is #{div(res, 2)}")
+    :even
+  else
+    :error ->
+      IO.puts("We don't have this item in map")
+      :error
+
+    _ ->
+      IO.puts("It's not odd")
+      :odd
+  end
+```
+
+이는 오류를 처리할 때 `case`같은 패턴매칭을 사용할 수 있도록 도와줍니다. 넘겨지는 값은 첫 번째 매치하지 않은 표현식입니다.

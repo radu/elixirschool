@@ -1,0 +1,142 @@
+# IEx Helpers
+
+## Visão Geral
+
+Assim que você começar a trabalhar com Elixir, IEx será o seu melhor amigo. Ele é um REPL, mas possui muitas funcionalidades avançadas que podem tornar a vida mais fácil, seja explorando um novo código ou desenvolvendo seu próprio trabalho a medida que avança. Há uma enorme quantidade de helpers embutidos que nós iremos detalhar nesta lição.
+
+### Autocompletar
+
+Quando trabalhando no shell, você talvez com frequência se encontre usando um novo módulo com o qual não está familiarizado. Para entender um pouco do que está disponível para você, a funcionalidade de autocompletar é maravilhosa. Simplesmente digite o nome de um módulo seguido por `.` então pressione `Tab`:
+
+
+
+```elixir
+ Map. # pressione Tab
+```
+
+E agora sabemos as funções que temos e seus números de argumentos!
+
+### .iex.exs
+
+Toda vez que o IEx inicia, ele irá procurar por um arquivo de configuração `.iex.exs`. Se não estiver presente no diretório atual, então o (`~/.iex.exs`) do diretório home do usuário será usado como alternativa.
+
+Opções de configurações e código definido dentro deste arquivo estarão disponíveis para nós quando o shell do IEx iniciar. Por exemplo, se quiséssemos alguma função helper disponível no IEx, poderíamos abrir o arquivo `.iex.exs` e fazer algumas mudanças.
+
+Vamos começar adicionando um módulo com alguns funções auxiliares.
+
+
+```elixir
+defmodule IExHelpers do
+  def whats_this?(term) when is_nil(term), do: "Type: Nil"
+  def whats_this?(term) when is_binary(term), do: "Type: Binary"
+  def whats_this?(term) when is_boolean(term), do: "Type: Boolean"
+  def whats_this?(term) when is_atom(term), do: "Type: Atom"
+  def whats_this?(_term), do: "Type: Unknown"
+end
+```
+
+Agora quando executamos o IEx teremos o IExHelpers módulo disponível desde o início. Abra o IEx e vamos experimentar nossos novos helpers.
+
+
+```elixir
+ IExHelpers.whats_this?("a string")
+```
+
+```elixir
+ IExHelpers.whats_this?(%{})
+```
+
+```elixir
+ IExHelpers.whats_this?(:test)
+```
+
+Como podemos ver não precisamos fazer nada de especial para requerer ou importar nossos helpers, IEx trata disso para nós.
+
+### h
+
+`h` é uma das mais úteis ferramentas que o Elixir shell nos dá.
+Devido ao fantástico suporte de primeira classe da linguagem para documentação, as docs para qualquer código podem ser visualizadas usando este helper.
+Para vê-lo em ação é simples:
+
+
+```elixir
+ h Enum
+```
+
+E agora podemos até combinar isso com as funcionalidades de autocompletar do nosso shell.
+Imagine que estivéssemos explorando Map pela primeira vez:
+
+
+```elixir
+ h Map
+```
+
+```elixir
+ Map.
+```
+
+```elixir
+ h Map.merge/2
+```
+
+Como podemos ver, fomos não só capazes de encontrar quais funções estavam disponíveis como parte do módulo, mas fomos capazes de acessar documentação individual de uma função, muitas das quais incluem exemplo de uso.
+
+### i
+
+Vamos colocar um pouco do nosso conhecimento adquirido empregando o uso do `h` para aprender um pouco mais sobre o `i` helper:
+
+
+```elixir
+ h i
+```
+
+```elixir
+ i Map
+```
+
+Agora nós temos bastante informação sobre o `Map`, incluindo onde seu código-fonte está salvo e os módulos que ele faz referência.
+Isto é bastante útil ao explorar tipos de dados personalizados e externos, e novas funções.
+
+Os cabeçalhos individuais podem ser densos, mas em um alto nível podemos coletar algumas informações relevantes:
+
+- É um tipo de dado atom
+- Onde o código-fonte está
+- A versão e opções de compilação
+- Uma descrição geral
+- Como acessá-lo
+- Quais outros módulos são referenciados
+
+Isto nos dá muito para trabalhar e é melhor que seguir às cegas.
+
+### r
+
+Se quisermos recompilar um módulo em particular, podemos usar o `r` helper. Vamos dizer que mudamos algum código e queremos executar uma nova função que adicionamos. Para fazermos isto precisamos salvar nossas alterações e recompilar com r:
+
+
+```elixir
+ r MyProject
+```
+
+### t
+
+O `t` helper nos diz sobre Tipos disponíveis em um dado módulo:
+
+
+```elixir
+ t Map
+```
+
+E agora sabemos que o `Map` define os tipos key e value em sua implementação.
+Se formos olhar no fonte do `Map`:
+
+
+```elixir
+defmodule Map do
+# ...
+  @type key :: any
+  @type value :: any
+# ...
+```
+Isto é um exemplo simples, declarando que keys e values por implementação pode ser de qualquer tipo, mas é útil saber disto.
+
+Com a aplicação de todos estes helpers embutidos podemos facilmente explorar o código e aprender mais sobre como as coisas funcionam. IEx é uma ferramenta bastante poderosa e robusta que dá poder aos desenvolvedores. Com essas ferramentas em nossa caixa de ferramentas, explorar e construir pode ser ainda mais divertido!

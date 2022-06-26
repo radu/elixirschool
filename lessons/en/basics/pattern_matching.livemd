@@ -1,0 +1,130 @@
+# Pattern Matching
+
+## Match Operator
+
+Are you ready for a curveball? In Elixir, the `=` operator is actually a match operator, comparable to the equals sign in algebra. Writing it turns the whole expression into an equation and makes Elixir match the values on the left hand with the values on the right hand. If the match succeeds, it returns the value of the equation. Otherwise, it throws an error. Let's take a look:
+
+
+```elixir
+ x = 1
+```
+
+Now let's try some simple matching:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Let's try that with some of the collections we know:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2 | _] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Pin Operator
+
+The match operator performs assignment when the left side of the match includes a variable.
+In some cases this variable rebinding behavior is undesirable.
+For these situations we have the pin operator: `^`.
+
+When we pin a variable we match on the existing value rather than rebinding to a new one.
+Let's take a look at how this works:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 introduced support for pins in map keys and function clauses:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+An example of pinning in a function clause:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+
+```elixir
+ greeting
+```
+
+Note in the `"Mornin'"` example that the reassignment of `greeting` to `"Mornin'"` only happens inside the function. Outside of the function `greeting` is still `"Hello"`.

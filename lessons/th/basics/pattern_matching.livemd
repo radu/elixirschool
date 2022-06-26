@@ -1,0 +1,122 @@
+# การจับคู่รูปแบบ (Pattern Matching)
+
+## Match Operator
+
+ใน Elixir เครื่องหมาย `=` จริง ๆ แล้วมันคือ เครื่องหมายการจับคู่ (match operator)  เปรียบได้กับเครื่องหมาย "เท่ากับ" ในพีชคณิต การใช้เครื่องหมาย `=` จะทำให้ expression นั้น ๆ กลายเป็นสมการ และทำให้ Elixir ทำการจับคู่ค่าฝ่ังซ้ายกับค่าฝั่งขวาทันที ถ้าสำเร็จ มันก็จะคืนค่าของสมการนั้นออกมา แต่ถ้าไม่สำเร็จ มันก็จะคืนค่าเออเรอร์ออกมาแทน เราลองมาดูตัวอย่างกัน:
+
+
+```elixir
+ x = 1
+```
+
+คราวนี้ลองทำการจับคู่ดู
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+ลองจับคู่กับ collection ที่เราเพิ่งเรียนมา
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2 | _] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Pin Operator
+
+match operator ใช้สำหรับการกำหนดค่าให้กับตัวแปรฝั่งซ้าย ในบางสถานการณ์เราอาจจะไม่ต้องการให้ตัวแปร rebind กับค่าใหม่ ซึ่งสามารถทำได้ด้วย pin operator `^`
+
+เมื่อเรา pin ตัวแปร นั่นหมายความว่าเราจะ match ค่าที่มีอยู่แล้วแทนที่จะผูกค่าใหม่ให้กับมัน มาดูตัวอย่างกันดีกว่า
+
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 ได้รองรับการใช้เครื่องหมายการปักหมุดใน map keys และ function:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+ตัวอย่างการปักหมุดใน function:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```

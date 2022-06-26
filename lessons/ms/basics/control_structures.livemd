@@ -1,0 +1,83 @@
+# Struktur Kawalan
+
+## if dan unless
+
+Kemungkinan besar anda telah menemui `if/2` sebelum ini, dan jika anda pernah menggunakan Ruby anda sudah biasa dengan `unless/2`.  Dalam Elixir mereka berfungsi lebih kurang sama tetapi mereka adalah ditetapkan sebagai makro, bukan komponen asas bahasa itu sendiri;  Anda akan menjumpai pelaksanaan mereka dalam [Kernel module](https://hexdocs.pm/elixir/Kernel.html).
+
+Perlu diingat di dalam Elixir, hanya `nil` dan boolean `false` mempunyai nilai false.
+
+
+```elixir
+ if String.valid?("Hello") do
+```
+
+```elixir
+ if "a string value" do
+```
+
+Penggunaan `unless/2` adalah seperti `if/2` cuma ia berfungsi secara negatif:
+
+
+```elixir
+ unless is_integer("hello") do
+```
+
+## case
+
+Jika memerlukan pemadanan dengan pelbagai corak kita boleh gunakan `case`:
+
+
+```elixir
+ case {:ok, "Hello World"} do
+```
+
+Pembolehubah `_` itu adalah penambahan penting di dalam kenyataan `case`.  Jika tidak digunakan, sebarang padanan yang gagal akan menimbulkan ralat:
+
+
+```elixir
+ case :even do
+```
+
+```elixir
+ case :even do
+```
+
+Anggapkan `_` sebagai `else` yang akan dipadankan dengan "yang lain-lain".
+Oleh kerana `case` bergantung kepada pemadanan corak, semua undang-undang dan restriction adalah digunapakai.  Jika anda berhasrat untuk membuat padanan kepada pembolehubah sedia ada anda perlu menggunakan operator pin `^`:
+
+
+```elixir
+ pie = 3.14
+```
+
+```elixir
+ case "cherry pie" do
+```
+
+Satu lagi ciri `case` ialah sokongan kepada klausa 'guard':
+
+_Contoh ini diambil terus dari panduan rasmi Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#case)._
+
+
+```elixir
+ case {1, 2, 3} do
+```
+
+Lihat dokumen rasmi untuk [Kenyataan yang dibenarkan di dalam klausa 'guard'](https://hexdocs.pm/elixir/guards.html#list-of-allowed-expressions).
+
+## cond
+
+Jika kita perlu untuk memadankan keadaan, dan bukan nilai, kita boleh berpaling kepada `cond`; ini adalah sama dengan `else if` atau `elsif` dalam bahasa-bahasa lain:
+
+_Contoh ini diambil terus dari panduan rasmi Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#cond)._
+
+
+```elixir
+ cond do
+```
+
+Seperti juga `case`, `cond` akan menimbulkan satu ralat jika tiada padanan.  Untuk mengatasi keadaan ini, kita boleh menetapkan satu padanan kepada `true`:
+
+```elixir
+ cond do
+```

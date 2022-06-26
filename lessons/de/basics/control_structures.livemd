@@ -1,0 +1,166 @@
+# Kontrollstrukturen
+
+## if und unless
+
+Die Chancen stehen gut, dass du bereits über `if/2` gestolpert bist und falls du mit Ruby vertraut bist, kennst du auch schon `unless/2`. In Elixir arbeiten diese beiden Konstrukte ähnlich, sind aber als Makros definiert und nicht wie in Ruby als Sprachkonstrukte. Du kannst ihre Implementierung in der Dokumentation des [Kernel Moduls](https://hexdocs.pm/elixir/Kernel.html) nachschlagen.
+
+Es sollte darauf geachtet werden, dass in Elixir die einzigen "falsey" Werte `nil` und der Boolesche Wert `false` sind.
+
+
+```elixir
+ if String.valid?("Hello") do
+```
+
+```elixir
+ if "a string value" do
+```
+
+Die Benutzung von `unless/2` ist wie `if/2`, arbeitet jedoch mit negativen Werten:
+
+
+```elixir
+ unless is_integer("hello") do
+```
+
+## case
+
+Falls es notwendig ist mehrere patterns zu matchen können wir `case` benutzen:
+
+
+```elixir
+ case {:ok, "Hello World"} do
+```
+
+Die `_` Variable ist ein wichtiger Teil in `case` statements. Wird es im match nicht gefunden, so tritt ein Fehler auf:
+
+
+```elixir
+ case :even do
+```
+
+```elixir
+ case :even do
+```
+
+Betrachte `_` wie `else`, dass auf "alles andere" zutrifft.
+
+Da `case` auf Pattern Matching basiert, gelten auch dieselben Regeln und Beschränkungen. Falls du vorhast gegen mehrere bereits existierende Variablen zu matchen, so musst du den Pin-Operator `^` benutzen:
+
+
+```elixir
+ pie = 3.14
+```
+
+```elixir
+ case "cherry pie" do
+```
+
+Ein weiteres nettes Feature von `case` ist die Unterstützung von guard clauses:
+
+_Dieses Beispiel kommt direkt aus dem offiziellen Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#case) Guide._
+
+
+```elixir
+ case {1, 2, 3} do
+```
+
+Schau in die offizielle Dokumentation für [Expressions allowed in guard clauses](https://hexdocs.pm/elixir/guards.html#list-of-allowed-expressions), um mehr über guard clauses zu erfahren.
+
+## cond
+
+Wenn man statt Werten conditions matchen muss benutzt man `cond`; es ist ähnlich `else if` oder `elsif`, bekannt aus anderen Sprachen:
+
+_Dieses Beispiel kommt direkt aus dem offiziellen Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#cond) Guide._
+
+
+```elixir
+ cond do
+```
+
+Wie `case` wirft `cond` einen Fehler sollte ein match nicht gefunden werden. Um das zu verhindern, können wir eine Bedingung auf `true` definieren:
+
+
+```elixir
+ cond do
+```
+
+## with
+
+Die Spezialform `with` ist nützlich wenn du ein genestetes `case` statement benutzen würdest oder in Situationen, die nicht so einfach gepiped werden können. Der Ausdruck `with` setzt sich aus keyword, generators und einem Ausdruck zusammen.
+
+Wir werden generators später in der Lektion "List Comprehension" besprechen, aber momentan müssen wir nur wissen, dass sie pattern matching benutzen, um die rechte Seite von `<-` mit der linken zu vergleichen.
+
+Wir starten mit einem einfachen Beispiel von `with` und werden dann einen spezielleren Fall anschauen:
+
+
+```elixir
+ user = %{first: "Sean", last: "Callan"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+Im Fall, dass ein Ausdruck keinen match hat, wird der nicht matchende Wert zurück gegeben:
+
+
+```elixir
+ user = %{first: "doomspork"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+Lass uns nun ein längeres Beispiel ohne `with` anschauen und dann sehen, wie wir es refactoren können:
+
+
+```elixir
+case Repo.insert(changeset) do
+  {:ok, user} ->
+    case Guardian.encode_and_sign(user, :token, claims) do
+      {:ok, jwt, full_claims} ->
+        important_stuff(jwt, full_claims)
+
+      error ->
+        error
+    end
+
+  error ->
+    error
+end
+```
+
+Wenn wir `with` einführen, kommen wir zu Code, der einfach zu verstehen ist und aus weniger Zeilen Code besteht:
+
+
+```elixir
+with {:ok, user} <- Repo.insert(changeset),
+     {:ok, jwt, full_claims} <- Guardian.encode_and_sign(user, :token, claims),
+     do: important_stuff(jwt, full_claims)
+```
+
+Ab Elixir 1.3 unterstützt `with/1` `else` Anweisungen:
+
+```
+import Integer
+
+m = %{a: 1, c: 3}
+
+a =
+  with {:ok, number} <- Map.fetch(m, :a),
+    true <- is_even(number) do
+      IO.puts "#{number} divided by 2 is #{div(number, 2)}"
+      :even
+  else
+    :error ->
+      IO.puts("We don't have this item in map")
+      :error
+
+    _ ->
+      IO.puts("It is odd")
+      :odd
+  end
+  ```
+Es hilft bei der Fehlerbehandlung, indem es pattern matching in ihm ermöglicht. Der übergebene Wert ist der erste nicht übereinstimmende Ausdruck.
+

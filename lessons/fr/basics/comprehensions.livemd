@@ -1,0 +1,106 @@
+# Compréhensions
+
+## Bases
+
+Les compréhensions peuvent souvent être utilisées pour produire des déclarations plus concises pour les itérations sur des `Enum` et des `Stream`.
+Commençons par regarder une compréhension simple que nous allons ensuite expliquer pas à pas :
+
+
+```elixir
+ list = [1, 2, 3, 4, 5]
+```
+
+```elixir
+ for x <- list, do: x*x
+```
+
+La première chose que nous remarquons est l'utilisation de `for` et d'un générateur.
+Qu'est-ce qu'un générateur ?
+Les générateurs sont les expressions comme `x <- [1, 2, 3, 4]` que l'on trouve dans les compréhensions de liste.
+Ils sont responsables de produire la prochaine valeur.
+
+Heureusement pour nous, les compréhensions ne sont pas limitées aux listes ; en fait, elles fonctionnent avec n'importe quel énumérable :
+
+
+```elixir
+ for {_key, val} <- [one: 1, two: 2, three: 3], do: val
+```
+
+```elixir
+ for {k, v} <- %{"a" => "A", "b" => "B"}, do: {k, v}
+```
+
+```elixir
+ for <<c <- "hello">>, do: <<c>>
+```
+
+Comme beaucoup d'autres choses en Elixir, les générateurs reposent sur la correspondance de motif (_pattern matching_) pour comparer leur ensemble d'entrée à la variable du côté gauche.
+Si une correspondance n'est pas trouvée, la valeur est ignorée :
+
+
+```elixir
+ for {:ok, val} <- [ok: "Hello", error: "Unknown", ok: "World"], do: val
+```
+
+Il est possible d'utiliser de multiples générateurs, de manière similaire à des boucles imbriquées :
+
+
+```elixir
+ list = [1, 2, 3, 4]
+```
+
+```elixir
+ for n <- list, times <- 1..n do
+```
+
+Afin de mieux illustrer l'exécution de la boucle qui a concrètement lieu, utilisons `IO.puts` pour afficher les deux valeurs générées :
+
+
+```elixir
+ for n <- list, times <- 1..n, do: IO.puts "#{n} - #{times}"
+```
+
+Les compréhensions des listes sont un _sucre syntaxique_ et ne devraient ainsi être utilisées que quand c'est approprié.
+
+## Filtres
+
+Vous pouvez considérer les filtres comme des sortes de clauses de garde pour les compréhensions.
+Quand une valeur filtrée retourne `false` ou `nil` elle est exclue de la liste finale.
+Itérons sur un intervalle et soucions-nous uniquement des nombres pairs.
+Nous utiliserons la fonction `is_even/1` du module `Integer` pour vérifier si la valeur est pair ou non.
+
+
+```elixir
+ for x <- 1..10, is_even(x), do: x
+```
+
+Comme pour les générateurs, nous pouvons utiliser plusieurs filtres.
+Elargissons notre intervalle et filtrons ensuite uniquement sur les valeurs qui sont à la fois pairs et multiples de 3.
+
+
+```elixir
+ for x <- 1..100,
+```
+
+## Utilisation de :into
+
+Comment faire si nous souhaitons produire autre chose qu'une liste ?
+Avec l'option `:into` nous pouvons faire exactement çà !
+Comme règle de base, `:into` accepte n'importe quelle structure qui implémente le protocole `Collectable`.
+
+En utilisant `:into`, créons un tableau associatif à partir d'une liste de mots-clés :
+
+
+```elixir
+ for {k, v} <- [one: 1, two: 2, three: 3], into: %{}, do: {k, v}
+```
+
+Comme les données de type `Binary` sont également des `Collectable`, nous pouvons nous servir d'une compréhension de liste et de `:into` pour créer des chaînes de caractères de type `String` :
+
+
+```elixir
+ for c <- [72, 101, 108, 108, 111], into: "", do: <<c>>
+```
+
+Et voilà !
+Les compréhensions de liste sont une manière simple et consise d'itérer sur une collection.

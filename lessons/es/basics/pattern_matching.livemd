@@ -1,0 +1,126 @@
+# Coincidencia de Patrones
+
+## Operador de coincidencia
+
+¿Estás listo para algo un poco sorprendente? En Elixir, el operador `=` es en realidad un operador de coincidencia, comparable al signo igual en el álgebra. Escribirlo transforma la expresión en una igualdad y hace que Elixir haga coincidencia de los valores del lado izquierdo con los del derecho. Si la coincidencia es exitosa, esta retorna el valor de la ecuación. De lo contrario, esta lanzará un error. Echemos un vistazo:
+
+
+```elixir
+ x = 1
+```
+
+Ahora vamos a intentarlo con una coincidencia simple:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Vamos a intentar esto con algunas de las colecciones que conocemos:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Operador Pin
+
+El operador de coincidencia realiza una asignación cuando el lado izquierdo de la coincidencia incluye una variable.
+En algunos casos reenlazar la variable no es el comportamiento deseado.
+Para esas situaciones, tenemos el operador `^` (pin).
+
+Cuando usamos el operador pin con una variable, hacemos una coincidencia sobre el valor existente en lugar de enlazarlo a uno nuevo.
+Vamos a ver cómo funciona esto:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 introduce soporte para usar el operador pin en las claves de los mapas y en las cláusulas de función:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Un ejemplo de usar el operador pin en una cláusula de función:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+
+Nota que en el ejemplo `"Mornin"` que la reasignación de `greeting` a `"Mornin"` solo ocurre dentro de la función. Afuera de la función `greeting` aún es `"Hello"`.

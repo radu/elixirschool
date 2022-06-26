@@ -1,0 +1,158 @@
+# IEx Yardımcıları
+
+## Genel Bakış
+
+Elixir kullanmaya başladığınızda, IEx en yakın arkadaşınız olacaktır.
+Bu bir REPL(Read–Eval–Print Loop)'olarak geçer, ancak yeni kodu keşfederken veya kendi işinizi geliştirirken hayatınızı kolaylaştıracak birçok gelişmiş özelliğe sahip olmanızı sağlar
+Bu derste üzerinden geçeceğimiz bir takım yerleşik(built-in) yardımcılar var.
+
+### Otomatik tamamlama
+
+Komut satırında çalışırken, çoğu zaman kendinizi bilmediğiniz yeni bir modül kullanırken bulacaksınız.
+Kullanabileceğiniz şeylerin bazılarını anlamak için otomatik tamamlama özelliğini kullanabilirsiniz.
+Sadece bir modül adını yazıp ardından `.` yazdıktan sonra `Tab` tuşuna basmanız yeterlidir:
+
+
+```elixir
+ Map. # press Tab
+```
+Ve şimdi sahip olduğumuz function'ları ve onların gerekliliklerini biliyoruz!
+
+### .iex.exs
+
+IEx her başlatıldığında bir `.iex.exs` yapılandırma dosyası arar. Geçerli dizinde yoksa kullanıcının ana dizininde bulunan (~/.iex.exs) yedek olarak kullanılacaktır.
+
+Bu dosyada tanımlanan yapılandırma seçenekleri ve kod IEx kabuğu başlatıldığında kullanılabilir. Örneğin, IEx'de bazı yardımcı fonksiyonları kullanmak istersek, `.iex.exs` dosyasını açıp bazı değişiklikler yapabiliriz.
+
+Birkaç yardımcı işlev içeren bir modül ekleyerek başlayalım:
+
+
+```elixir
+defmodule IExHelpers do
+  def whats_this?(term) when is_nil(term), do: "Type: Nil"
+  def whats_this?(term) when is_binary(term), do: "Type: Binary"
+  def whats_this?(term) when is_boolean(term), do: "Type: Boolean"
+  def whats_this?(term) when is_atom(term), do: "Type: Atom"
+  def whats_this?(_term), do: "Type: Unknown"
+end
+```
+
+Artık IEx'i çalıştırdığımızda baştan beri IExHelpers modülümüzü kullanacağız. IEx'i açın ve yeni oluşturduğumuz programlarımızı deneyelim:
+
+
+```elixir
+ IExHelpers.whats_this?("a string")
+```
+
+```elixir
+ IExHelpers.whats_this?(%{})
+```
+
+```elixir
+ IExHelpers.whats_this?(:test)
+```
+
+Görebildiğimiz gibi, helpers modüllerimizi çağırmak veya import etmek için özel bir şeyler yapmak zorunda değiliz, IEx bunu bizim için zaten halledecektir.
+
+
+### h
+
+`h`, Elixir komut satırının bize verdiği en faydalı araçlardan biridir.
+Dilin dokümantasyonu için muhteşem birinci sınıf desteği sayesinde, herhangi bir kodun dokümanlarına bu yardımcı araç kullanılarak ulaşılabilir.
+Nasıl çalıştığına bakalım:
+
+
+```elixir
+ h Enum
+```
+
+Ve şimdi bunu komut satırımızda otomatik tamamlama özellikleri ile birleştirebiliriz.
+Map'i ilk kez kullandığınızı düşünün:
+
+
+```elixir
+ h Map
+```
+
+```elixir
+ Map.
+```
+
+```elixir
+ h Map.merge/2
+```
+
+Gördüğünüz gibi modülün bir parçası olarak hangi fonksiyonların mevcut olduğunu bulamadık, ancak birçoğunda gördük ki örnek kullanımı içeren fonksiyon belgeleri var.
+
+### i
+
+Yeni kullanacağımız `i` yardımcı aracı hakkında biraz daha fazla bilgi sahibi olabilmek için `h` aracını kullanalım:
+
+
+```elixir
+ h i
+```
+
+```elixir
+ i Map
+```
+
+Şimdi, kaynağın nerede tutulduğunu ve nereye referans sağladığını, modüller de dahil olmak üzere `maps` hakkında bir sürü bilgiye erişebiliriz. Özel ve farklı veri türlerini ve yeni fonksiyonları keyfetmek işimize oldukça yarayacaktır
+
+Belli başlı konular şu şekildedir:
+
+- Bir atom veri tipi
+- Kaynak kod nerede
+- Sürüm ve derleme seçenekleri
+- Genel bir açıklama
+- Nasıl erişilir?
+- Hangi diğer modülleri referans gösteriyor?
+
+Bu size çok çalışmanızı sağlasa da kör olmaktan kurtarır.
+
+### r
+
+Belli bir modülü yeniden derlemek istersek `r` yardımcı aracını kullanabiliriz. Diyelim ki, bazı kodları değiştirdik ve eklediğimiz yeni bir fonksiyonu çalıştırmak istedik. Bunu yapmak için değişikliklerimizi kaydettirip r ile yeniden derlemeliyiz:
+
+
+```elixir
+ r MyProject
+```
+
+### s
+
+`s` ile, bir modül veya fonksiyon için tip özellikleri bilgisini alabiliriz. Bunu, ne beklediğini bilmek için kullanabiliriz:
+
+
+```elixir
+ s Map.merge/2
+```
+
+```elixir
+ s Map
+```
+
+### t
+
+`t` yardımcı aracı, belirli bir modülde kullanılabilen tipleri hakkında bilgi verir:
+
+
+```elixir
+ t Map
+```
+
+Ve şimdi biz biliyoruz ki `Map`, uygulanmasında anahtar ve değer tipleri tanımlıyor.
+Gidip `Maps` kaynağına bakarsak:
+
+
+```elixir
+defmodule Map do
+# ...
+  @type key :: any
+  @type value :: any
+# ...
+```
+
+Bu en basit örnektir, uygulama başına anahtar ve değerlerin herhangi bir tip olabileceğini belirtir, gerektiği zaman tiplerin ne olduğunu bilmek işimize yarayacaktır.
+
+Tüm bu yerleşik özelliklerden yararlanarak kodu kolayca keşfedebilir ve işlerin nasıl yürüdüğü konusunda daha fazla bilgi edinebiliriz. IEx, geliştiricileri güçlendiren çok güçlü ve sağlam bir yardımcı araçtır. Araç kutusu(toolbox) içerisindeki bu araçlar sayesinde yeni şeyler keşfetmek ve üretmek daha da eğlenceli olabilir!

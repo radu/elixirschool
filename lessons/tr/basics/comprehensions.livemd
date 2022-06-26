@@ -1,0 +1,94 @@
+# Comprehensions(Kavramlar)
+
+## Temeller
+
+Genellikle zaman kavramaları, 'Enum' ve 'Stream' yinelemesi için daha özlü ifadeler üretmek amacı ile kullanılabilir. Basit bir örneğe bakarak anlamaya çalışalım:
+
+
+```elixir
+ list = [1, 2, 3, 4, 5]
+```
+
+```elixir
+ for x <- list, do: x*x
+```
+
+Fark ettiğimiz ilk şey `for` ve bir generator kullanılmasıdır.  Peki generator nedir? Generator, liste kavramalarında bulunan `x <- [1, 2, 3, 4]` deyimidir. Bir sonraki değeri üretmekle sorumludur.
+
+Neyseki bu konuda şanslıyız, generator'lar listelerle sınırlı değildir; Aslında, sayılabilir herhangi bir sayı ile çalışabileceklerdir:
+
+
+```elixir
+ for {_key, val} <- [one: 1, two: 2, three: 3], do: val
+```
+
+```elixir
+ for {k, v} <- %{"a" => "A", "b" => "B"}, do: {k, v}
+```
+
+```elixir
+ for <<c <- "hello">>, do: <<c>>
+```
+
+Elixir'deki birçok şey gibi, generator'ler de giriş kümesini sol taraf değişkeniyle karşılaştırmak için örüntü eşleştirme(pattern matching) kullanır. Bir eşleşme bulunmadığında, değer yok sayılır:
+
+
+```elixir
+ for {:ok, val} <- [ok: "Hello", error: "Unknown", ok: "World"], do: val
+```
+
+İç içe döngüler gibi çok sayıda generator kullanmak da mümkündür:
+
+
+```elixir
+ list = [1, 2, 3, 4]
+```
+
+```elixir
+ for n <- list, times <- 1..n do
+```
+
+Oluşan döngüyü daha iyi açıklamak için, üretilen iki değeri görüntülemek adına `IO.puts` komutunu kullanalım:
+
+
+```elixir
+ for n <- list, times <- 1..n, do: IO.puts "#{n} - #{times}"
+```
+
+Liste anlama kavramları syntactic sugar(sözdizimsel guzellik) yalnızca uygun olduğunda kullanılmalıdır.
+
+## Filtreler
+
+Filtreleri bir çeşit koruyucu olarak düşünebilirsiniz. Filtrelenmiş bir değer `false` veya `nil` döndürdüğünde, listeden çıkarılır. Bir aralık üzerinde duralım ve sadece sayıları düşünelim. Bir değerin eşit olup olmadığını kontrol etmek için tamsayı(Integer) modülündeki `is_even/1` fonksiyonunu kullanacağız.
+
+
+```elixir
+ for x <- 1..10, is_even(x), do: x
+```
+
+generator'lar gibi, çoklu filtreleri de kullanabiliriz. Aralığı genişletip yalnızca 3 ve 3'e eşit olarak bölünebilen değerler için filtre uygulayabiliriz.
+
+
+```elixir
+ for x <- 1..100,
+```
+
+## :into Kullanımı
+
+Listeden başka bir şey üretmek istiyorsak ne yapacağız? `:Into` seçeneğini göz önüne alırsak yapabiliriz, Genel bir kural olarak, `:into`, `Collectable` protokolünü uygulayan herhangi bir yapıyı kabul edecektir.
+
+`:into` kullanımı, haydi anahtar kelimeler için bir harita(map) oluşturalım:
+
+
+```elixir
+ for {k, v} <- [one: 1, two: 2, three: 3], into: %{}, do: {k, v}
+```
+
+İkili dosyalar koleksiyondan oluştuğundan, Liste anlama kavramları ve `:into` dizeleri oluşturmak için kullanabilirsiniz:
+
+
+```elixir
+ for c <- [72, 101, 108, 108, 111], into: "", do: <<c>>
+```
+
+Hepsi bu kadar!

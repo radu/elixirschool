@@ -1,0 +1,127 @@
+# Pattern Matching
+
+## L'opérateur Match
+
+Êtes-vous prêt pour un peu d'inattendu ? En Elixir, `=` est l'opérateur de correspondance, comparable au signe égal dans l'algèbre. L'utiliser transforme toute l'expression en une équation, et Elixir évalue l'équivalence des éléments à gauche et à droite du signe égal. S'il y a correspondance, il retourne la valeur de l'equation. Sinon il génère une erreur. Regardons ça :
+
+
+```elixir
+ x = 1
+```
+
+Maintenant essayons une correspondance simple:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Essayons avec une collection:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## L'opérateur Pin
+
+Nous venons de voir que l'opérateur de correspondance gère l'assignement lorsque la partie à gauche inclus une variable. Dans certains cas ce comportement, la re-assignation de variable, n'est pas désirable. Pour ces situations, nous avons l'opérateur pin: `^` (épingle).
+
+Lorsque nous épinglons une variable nous essayons une correspondance avec la valeur existante plutôt que d'en assigner une nouvelle. Regardons comment ca fonctionne:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 a introduit le support de l'épinglage pour les clés d'une map ainsi que les clauses de fonctions:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Un exemple d'épinglage dans une clause de fonction:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+
+```elixir
+ greeting
+```
+
+Notez que dans l'exemple `"Mornin'"` la re-assignation de `greeting` à `"Mornin'"` arrive seulement à l'intérieur de la fonction. En dehors de la fonction `greeting` vaut toujours `"Hello"`.

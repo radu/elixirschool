@@ -1,0 +1,146 @@
+# Kontrollstrukturer
+
+## if og unless
+
+Sannsynligheten er stor for at du har vært borti `if/2` tidligere, og har du tidligere programmert i Ruby kjenner du til `unless/2`. De virker på samme måte i Elixir, men er her definert som makroer, og ikke språk konstruksjoner. Du kan finne implementeringen i [Kernel modulen](https://hexdocs.pm/elixir/Kernel.html).
+
+Det er verdt å merke seg at kun verdien `nil` og den boolske verdien `false` er "usant" i Elixir.
+
+
+```elixir
+ if String.valid?("Hello") do
+```
+
+```elixir
+ if "a string value" do
+```
+
+`unless/2` er motsatt av `if/2` - Ellers fungerer den på samme måte:
+
+
+```elixir
+ unless is_integer("hello") do
+```
+
+## case
+
+Om vi trenger å sammenligne mot forskjellige mønster, kan vi bruke `case`:
+
+
+```elixir
+ case {:ok, "Hello World"} do
+```
+
+Variabelen `_` er en viktig del av `case`. Uten den vil funksjonen gi oss ei feilmelding, hvis det ikke finnes en match.
+
+
+```elixir
+ case :even do
+```
+
+```elixir
+ case :even do
+```
+
+Variabelen `_` blir som `else` og vil matche "alt annet".
+
+Siden `case` avhenger av mønstersammenligning, gjelder de samme reglene og restriksjonene. Hvis du ønsker å sammenligne med en eksisterende variabel, må festeoperatoren `^` benyttes:
+
+
+```elixir
+ pie = 3.14 
+```
+
+```elixir
+ case "cherry pie" do
+```
+
+En annen fiffig funksjon i `case`, er dens støtte for beskyttelsesklausuler (guard clauses):
+
+_Dette eksemplet er hentet direkte fra den offisielle Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#case) guiden._
+
+
+
+```elixir
+ case {1, 2, 3} do
+```
+
+Se den offisielle dokumentasjonen for [Tillatte uttrykk i beskyttelsesklausuler](https://hexdocs.pm/elixir/guards.html#list-of-allowed-expressions).
+
+
+## cond
+
+Hvis vi trenger å sammenligne forhold, og ikke verdier, kan vi bruke `cond`.
+Denne funksjonen kan sammenlignes med `else if` eller `elsif` i andre programmeringsspråk:
+
+_Dette eksemplet er hentet direkte fra den offisielle Elixir [Getting Started](http://elixir-lang.org/getting-started/case-cond-and-if.html#cond) guiden._
+
+
+```elixir
+ cond do
+```
+
+På samme måte som `case`, vil `cond` gi oss ei feilmelding hvis det ikke er noen match. Vi kan håndtere dette ved å definere en betingelse til `true`:
+
+
+```elixir
+ cond do
+```
+
+## with
+
+`with` er nyttig hvis vi for eksempel benytter oss av et nestet `case` statement eller forhold som ikke enkelt kan transporteres sammen. `with` består av nøkkelord, generatorer og et utrykk.
+
+Vi vil diskutere generatorer nærmere i en senere leksjon, men alt vi trenger å vite nå er at de benytter mønstersammenligning til å sammenligne den høyre siden `<-` med den venstre.
+
+Vi starter med et enkelt eksempel av `with`:
+
+
+```elixir
+ user = %{first: "Sean", last: "Callan"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+Hvis utsagnet ikke kan sammenlignes, vil den ikke-sammenlignbare verdien returneres:
+
+
+```elixir
+ user = %{first: "doomspork"}
+```
+
+```elixir
+ with {:ok, first} <- Map.fetch(user, :first),
+```
+
+La oss nå se på et større eksempel uten `with`, og deretter se hvordan vi kan refaktorere det:
+
+
+
+```elixir
+case Repo.insert(changeset) do
+  {:ok, user} ->
+    case Guardian.encode_and_sign(user, :token, claims) do
+      {:ok, jwt, full_claims} ->
+        important_stuff(jwt, full_claims)
+
+      error ->
+        error
+    end
+
+  error ->
+    error
+end
+```
+
+Når vi introduserer `with` til eksemplet, ender vi opp med kode som er enklere å lese, og som består av færre linjer:
+
+
+```elixir
+with {:ok, user} <- Repo.insert(changeset),
+     {:ok, jwt, full_claims} <- Guardian.encode_and_sign(user, :token, claims),
+     do: important_stuff(jwt, full_claims)
+```
+

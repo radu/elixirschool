@@ -1,0 +1,112 @@
+# Manejo de errores
+
+## Manejo de errores
+
+Antes de que podamos manejar errores necesitamos crearlos, y la manera más simple de hacer esto es con `raise/1`:
+
+
+```elixir
+ raise "Oh no!"
+```
+
+Si queremos especificar el tipo y mensaje, necesitamos usar `raise/2`:
+
+
+```elixir
+ raise ArgumentError, message: "the argument value is invalid"
+```
+
+Cuando sabemos que un error puede ocurrir, podemos manejarlo usando `try/rescue` y coincidencia de patrones:
+
+
+```elixir
+ try do
+```
+
+Es posible coincidir múltiples errores en un solo `rescue`:
+
+
+```elixir
+try do
+  opts
+  |> Keyword.fetch!(:source_file)
+  |> File.read!()
+rescue
+  e in KeyError -> IO.puts("missing :source_file option")
+  e in File.Error -> IO.puts("unable to read source file")
+end
+```
+
+## After
+
+A veces es necesario realizar alguna acción después de nuestro `try/rescue` independientemente de si hubo o no error. Para esto tenemos `try/after`. Si estás familiarizado con Ruby, esto es similar a `begin/rescue/ensure` o en Java a `try/catch/finally`:
+
+
+```elixir
+ try do
+```
+
+Esto es más comúnmente usado con archivos o conexiones que deberían ser cerradas:
+
+
+```elixir
+{:ok, file} = File.open("example.json")
+
+try do
+  # Do hazardous work
+after
+  File.close(file)
+end
+```
+
+## Nuevos errores
+
+Pese a que elixir incluye un número de errores predefinidos como `RuntimeError`, mantenemos la habilidad de crear los nuestros si necesitamos algo específico.
+Crear un nuevo error es fácil con la macro `defexception/1`, que convenientemente acepta la opción `:message` para definir un mensaje de error por defecto:
+
+
+```elixir
+defmodule ExampleError do
+  defexception message: "an example error has occurred"
+end
+```
+
+Llevemos nuestro nuevo error a dar una vuelta:
+
+
+```elixir
+ try do
+```
+
+## Throws
+
+Otro mecanismo para trabajar con errores en Elixir es `throw` y `catch`.
+En la práctica, estos ocurren muy inusualmente en código de Elixir más nuevo, pero es importante conocerlos y entenderlos.
+
+La función `throw/1` nos da la habilidad de salir de la ejecución con un valor específico que podemos capturar con `catch` y luego utilizar:
+
+
+```elixir
+ try do
+```
+
+Como se mencionó, `throw/catch` son muy poco comunes y típicamente existen como recurso provisional cuando las bibliotecas fallan en proveer APIs adecuadas.
+
+## Salir
+
+El último mecanismo de error que Elixir nos provee es `exit`.
+Las señales de salida ocurren cuando un proceso muere y son una parte importante de la tolerancia a fallos en Elixir.
+
+Para salir de manera explícita podemos usar `exit/1`:
+
+
+```elixir
+ spawn_link fn -> exit("oh no") end
+```
+
+Pese a que es posible manejar una salida con `try/catch`, hacerlo es _extremadamente_ raro. En casi todos los casos es ventajoso permitir al supervisor manejar la salida del proceso:
+
+
+```elixir
+ try do
+```

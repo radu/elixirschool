@@ -1,0 +1,121 @@
+# Pemadanan Corak
+
+## Operator Padanan
+
+Anda bersedia untuk sesuatu yang pelik?  Di dalam Elixir, operator `=` adalah satu operator padanan(match operator).  Melalui operator padanan kita boleh menetapkan nilai dan kemudian membuat pemadanan nilai, mari kita lihat:
+
+
+```elixir
+ x = 1
+```
+
+Sekarang kita akan membuat ujian pemadanan mudah:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Sekarang kita akan menguji beberapa 'collection' yang kita tahu:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Operator Pin
+
+Kita baru belajar bahawa operator padanan menguruskan penetapan nilai apabila bahagian sebelah kiri pemadanan itu mengandungi satu pembolehubah.  Dalam sesetengah keadaan, penetapan semula nilai kepada pembolehubah tidak dibenarkan.  Untuk keadaan ini, kita mempunyai operator pin: `^`.
+
+Apabila kita meletakkan pin(`^`) kepada satu pembolehubah, kita akan membuat pemadanan untuk nilai semasa dan tidak akan menetapkan nilai baru kepada pembolehubah tersebut.  Mari kita lihat bagaimana ia berfungsi:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 memperkenalkan sokongan untuk pin di dalam kunci 'map' dan klausa fungsi-fungsi:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Satu contoh penggunaan pin di dalam klausa fungsi:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```

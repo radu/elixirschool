@@ -1,0 +1,126 @@
+# Pattern Matching
+
+## Operador Match
+
+Você está preparado para ficar um pouco confuso? Em Elixir, o operador `=` é na verdade o nosso operador match, comparável ao sinal de igualdade da matemática. Quando usado, a expressão inteira se torna uma equação e faz com que Elixir combine os valores do lado esquerdo com os valores do lado direito da expressão. Se a comparação for bem sucedida, o valor da equação é retornado. Se não, um erro é lançado. Vejamos a seguir:
+
+
+```elixir
+ x = 1
+```
+
+Agora vamos tentar a simples correspondência:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Vamos tentar isso com algumas das coleções que nós conhecemos:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2 | _] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Operador Pin
+
+Acabamos de aprender que o operador match manuseia atribuições quando o lado esquerdo da associação é uma variável. Em alguns casos este comportamento de reassociação de variável é algo não desejável. Para estas situações, nós temos o operador pin:`^`.
+
+Quando fixamos a variável em associação ao valor existente ao invés de reassociar a um novo valor. Vamos ver como isso funciona:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+Elixir 1.2 introduziu suporte para pins em chaves de mapas e cláusulas de função:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Um exemplo do uso do pin em uma cláusula de função:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+
+```elixir
+ greeting
+```
+
+Note que no exemplo `"Mornin'"`, a reassociação de `greeting` para `"Mornin'"` só acontece dentro de uma função. Fora da função, `greeting` continua sendo `"Hello"`.

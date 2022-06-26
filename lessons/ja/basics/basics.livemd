@@ -1,0 +1,330 @@
+# 基本
+
+## 入門
+
+### Elixirのインストール
+
+各OS向けのインストール方法はElixir-lang.org上の[Installing Elixir](http://elixir-lang.org/install.html) で探すことができます。
+
+Elixirがインストールされたら簡単にバージョンを確認できます。
+
+    % elixir -v
+    Erlang/OTP {{ site.erlang.OTP }} [erts-{{ site.erlang.erts }}] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+    Elixir {{ site.elixir.version }}
+
+### 対話モード
+
+ElixirにはIExという対話シェルが付属しており、入力したそばからElixirの式を評価することができるようになっています。
+
+対話モードを開始するには、 `iex` を起動しましょう:
+
+    Erlang/OTP {{ site.erlang.OTP }} [erts-{{ site.erlang.erts }}] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+
+    Interactive Elixir ({{ site.elixir.version }}) - press Ctrl+C to exit (type h() ENTER for help)
+    iex>
+
+参考：Windows PowerShellの場合、`iex.bat` と入力する必要があります。
+
+先に進み、試しにいくつかの簡単な式を入力してみましょう:
+
+
+```elixir
+ 2+3
+```
+
+```elixir
+ 2+3 == 5
+```
+
+```elixir
+ String.length("The quick brown fox jumps over the lazy dog")
+```
+
+それぞれの式をまだ理解していなくても心配することはありませんが、イメージを掴んでもらえたらと思います。
+
+## 基本データ型
+
+### 整数
+
+
+```elixir
+ 255
+```
+
+2進数、8進数、16進数をサポートしています。
+
+
+```elixir
+ 0b0110
+```
+
+```elixir
+ 0o644
+```
+
+```elixir
+ 0x1F
+```
+
+### 浮動小数
+
+Elixirでは、浮動小数点数は少なくとも1桁の数字とその後に続く小数を必要とし、64ビットの倍精度で、指数 `e` に対応しています:
+
+
+```elixir
+ 3.14
+```
+
+```elixir
+ .14
+```
+
+```elixir
+ 1.0e-10
+```
+
+### 真理値
+
+Elixirは真理値として `true` と `false` を提供しています。また、 `false` と `nil` 以外は真とみなされます:
+
+
+```elixir
+ true
+```
+
+```elixir
+ false
+```
+
+### アトム
+
+アトムは自身の名前がそのまま値になる定数です。Rubyをご存知なら、シンボルと同義になります:
+
+
+```elixir
+ :foo
+```
+
+```elixir
+ :foo == :bar
+```
+
+真理値の `true` と `false` はそれぞれ、アトムの `:true` と `:false` でもあります。
+
+
+```elixir
+ is_atom(true)
+```
+
+```elixir
+ is_boolean(:true)
+```
+
+```elixir
+ :true === true
+```
+
+Elixirのモジュールの名前もまたアトムです。 `MyApp.MyModule` は、そのようなモジュールが宣言されていなくても有効なアトムです。
+
+
+```elixir
+ is_atom(MyApp.MyModule)
+```
+
+アトムは、Erlangのビルトインのものも含めたライブラリのモジュールを参照するのにも使われます。
+
+
+```elixir
+ :crypto.strong_rand_bytes 3
+```
+
+### 文字列
+
+文字列はElixirではUTF-8エンコードされていて、二重引用符で囲みます:
+
+
+```elixir
+ "Hello"
+```
+
+```elixir
+ "dziękuję"
+```
+
+文字列は改行やエスケープシーケンスに対応しています:
+
+
+```elixir
+ "foo
+```
+
+```elixir
+ "foo\nbar"
+```
+
+また、Elixirにはより複雑なデータ型も含まれています。[コレクション](/ja/lessons/basics/collections)や[関数](/ja/lessons/basics/functions)について学ぶときにそれらについても詳しく学びます。
+
+## 基本的な演算
+
+### 算術
+
+予想されている通りかもしれませんが、Elixirは基本的な演算子である `+`, `-`, `*`, `/` を提供しています。重要なことは、`/` は常にfloatを返すということです。
+
+
+```elixir
+ 2 + 2
+```
+
+```elixir
+ 2 - 1
+```
+
+```elixir
+ 2 * 5
+```
+
+```elixir
+ 10 / 5
+```
+
+整数の除算や除算の余り（モジュロ）が必要な場合、Elixirにはこれを実現するための便利な関数が2つ用意されています。
+
+
+```elixir
+ div(10, 5)
+```
+
+```elixir
+ rem(10, 3)
+```
+
+### ブール演算
+
+Elixirは `||` と `&&` 、 `!` という論理演算子を用意しており、これらはどんな型にも対応しています:
+
+
+```elixir
+ -20 || true
+```
+
+```elixir
+ false || 42
+```
+
+```elixir
+ 42 && true
+```
+
+```elixir
+ 42 && nil
+```
+
+```elixir
+ !42
+```
+
+```elixir
+ !false
+```
+
+さらに、最初の引数が真理値(`true` と `false`)で _なければならない_ 3つの演算子があります:
+
+
+```elixir
+ true and 42
+```
+
+```elixir
+ false or true
+```
+
+```elixir
+ not false
+```
+
+```elixir
+ 42 and true
+```
+
+```elixir
+ not 42
+```
+
+参考: Elixirの `and` と `or` はErlangの `andalso` と `orelse` に対応しています。
+
+### 比較
+
+Elixirには私たちが慣れている全ての比較演算子が備わっています: `==`, `!=`, `===`, `!==`, `<=`, `>=`, `<` そして `>` です。
+
+
+```elixir
+ 1 > 2
+```
+
+```elixir
+ 1 != 2
+```
+
+```elixir
+ 2 == 2
+```
+
+```elixir
+ 2 <= 3
+```
+
+整数と浮動小数を厳密に比べるには `===` を使います:
+
+
+```elixir
+ 2 == 2.0
+```
+
+```elixir
+ 2 === 2.0
+```
+
+Elixirの重要な特徴はどんな2つの型でも比べられるということで、これは特にソートにおいて有用です。ソートされる順序を覚える必要はありませんが、順序を気にするのは重要なことです:
+
+
+```elixir
+number < atom < reference < function < port < pid < tuple < map < list < bitstring
+```
+
+これは他の言語では見られないかもしれない、正当で興味深い比較を引き起こします:
+
+
+```elixir
+ :hello > 999
+```
+
+```elixir
+ {:hello, :world} > [1, 2, 3]
+```
+
+### 文字列への式展開
+
+Rubyを使っているなら、Elixirでの式展開は見覚えがあるでしょう:
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello #{name}"
+```
+
+### 文字列の連結
+
+文字列連結は `<>` 演算子を利用します:
+
+
+```elixir
+ name = "Sean"
+```
+
+```elixir
+ "Hello " <> name
+```

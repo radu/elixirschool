@@ -1,0 +1,152 @@
+# Enums
+
+## Enum
+
+Das `Enum`-Modul besitzt über hundert Funktionen, um mit collections zu arbeiten, die wir im letzten Kapitel kennen gelernt haben.
+
+Diese Lektion wird nur einen kleinen Teil der verfügbaren Funktionen behandeln, wir können sie jedoch alle genauer anschauen. Lass uns ein kleines Experiment in IEx machen.
+
+
+```elixir
+ Enum.__info__(:functions) |> Enum.each(fn({function, arity}) ->
+```
+
+Hieran sieht man, dass wir viel Funktionalität haben und das aus gutem Grund. Enumeration ist die Basis funktionaler Programmierung und ein unglaublich nützliches Ding.
+Durch Ausnutzen davon, zusammen mit anderen Vorteilen Elixirs, wie die Dokumentation als `Bürger erster Klasse` behandelt wird, kann es auch den Entwickler enorm unterstützen.
+
+Um eine komplette Liste der Funktionen zu sehen besuche die offizielle [`Enum`](https://hexdocs.pm/elixir/Enum.html)-Dokumentation; für lazy enumeration nimm das [`Stream`](https://hexdocs.pm/elixir/Stream.html)-Modul.
+
+### all?
+
+Beim Benutzen von `all?`, ähnlich wie oft in `Enum`, liefern wir den Items unserer collection eine Funktion, die auf jedes einzelne Elemente angewandt wird. Im Fall von `all?` muss die gesamte collection `true` sein, ansonsten wird als Rückgabewert `false` zurück gegeben:
+
+
+```elixir
+ Enum.all?(["foo", "bar", "hello"], fn(s) -> String.length(s) == 3 end)
+```
+
+```elixir
+ Enum.all?(["foo", "bar", "hello"], fn(s) -> String.length(s) > 1 end)
+```
+
+### any?
+
+Anders wie oben gibt `any?` `true` zurück, falls mindestens ein Element der collection `true` ist:
+
+
+```elixir
+ Enum.any?(["foo", "bar", "hello"], fn(s) -> String.length(s) == 5 end)
+```
+
+### chunk_every/2
+
+Falls du deine collection in kleinere Gruppen teilen möchtest ist `chunk_every/2` vermutlich die Funktion, nach der du suchst:
+
+
+```elixir
+ Enum.chunk_every([1, 2, 3, 4, 5, 6], 2)
+```
+
+
+`chunk_every/2` hat einige Optionen, aber diese werden wir nicht besprechen. Falls du mehr darüber erfahren möchtest, sieh dir [`chunk_every/4`](https://hexdocs.pm/elixir/Enum.html#chunk_every/4) in der offiziellen Dokumentation an, um mehr darüber zu erfahren.
+
+### chunk_by
+
+Falls unsere collection aufgrund eines anderen Merkmals als Größe geteilt werden soll, kannst du die Methode `chunk_by/2` benutzen. Sie nimmt ein vorhandenes enumerable und eine Funktion und falls der Rückgabewert dieser Funktion sich ändert wird eine neue Gruppe erzeugt:
+
+
+```elixir
+ Enum.chunk_by(["one", "two", "three", "four", "five"], fn(x) -> String.length(x) end)
+```
+
+```elixir
+ Enum.chunk_by(["one", "two", "three", "four", "five", "six"], fn(x) -> String.length(x) end)
+```
+
+### each
+
+Es kann vonnöten sein über die collection zu iterieren ohne einen Wert zu erzeugen. Für diesen Fall gibt es `each`:
+
+
+```elixir
+ Enum.each(["one", "two", "three"], fn(s) -> IO.puts(s) end)
+```
+
+__Hinweis__: Die Methode `each` gibt das Atom `:ok` zurück.
+
+### map
+
+Um unsere Funktion auf jedes Item der collection anzuwenden und eine neue collection zu erzeugen gibt es die `map`-Funktion:
+
+
+```elixir
+ Enum.map([0, 1, 2, 3], fn(x) -> x - 1 end)
+```
+
+### min
+
+Finde den `min`-Wert in unserer collection:
+
+
+```elixir
+ Enum.min([5, 3, 0, -1])
+```
+
+### max
+
+Finde den `max`-Wert in unserer collection:
+
+
+```elixir
+ Enum.max([5, 3, 0, -1])
+```
+
+### reduce
+
+Mit `reduce` können wir unsere collection auf einen einzelnen Wert destillieren. Um dies zu tun müssen wir einen optionalen Akkumulator angeben (`10` in diesem Beispiel), der der Funktion übergeben wird; falls kein Akkumulator übergeben wird, so wird der erste Wert genommen:
+
+
+```elixir
+ Enum.reduce([1, 2, 3], 10, fn(x, acc) -> x + acc end)
+```
+
+```elixir
+ Enum.reduce([1, 2, 3], fn(x, acc) -> x + acc end)
+```
+
+```elixir
+ Enum.reduce(["a","b","c"], "1", fn(x,acc)-> x <> acc end)
+```
+
+### sort
+
+Unsere collection zu sortieren geht nicht nur mit einer, nein, sogar zwei `sort`-Funktionen. Die erste Option benutzt Elixirs Termsortierung, um die sortierte Reihenfolge zu bestimmen:
+
+
+```elixir
+ Enum.sort([5, 6, 1, 3, -1, 4])
+```
+
+```elixir
+ Enum.sort([:foo, "bar", Enum, -1, 4])
+```
+
+Die andere Option erlaubt uns selbst eine Sortierfunktion anzugeben:
+
+
+```elixir
+ Enum.sort([%{:val => 4}, %{:val => 1}], fn(x, y) -> x[:val] > y[:val] end)
+```
+
+```elixir
+ Enum.sort([%{:count => 4}, %{:count => 1}])
+```
+
+### uniq
+
+Wir können `uniq` dazu benutzen Duplikate aus unserer collection zu entfernen:
+
+
+```elixir
+ Enum.uniq([1, 2, 2, 3, 3, 3, 4, 4, 4, 4])
+```

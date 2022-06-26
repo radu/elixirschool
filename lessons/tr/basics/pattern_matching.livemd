@@ -1,0 +1,121 @@
+# Ornegini Bulma
+
+## Eslestirme Operatoru (Match Operator)
+
+Ters kose olmaya hazir misiniz? Elixir'de, `=` operatoru bir eslestirme operatorudur. Esittir isareti tum denklemi bir esitlige donusturur ve Elixir soldaki degerleri sagdaki ile eslestirir. Eger eslestirme dogru ise esitligin degeri sonuc olarak doner. Aksi takdirde hata doner. Isterseniz inceleyelim:
+
+
+```elixir
+ x = 1
+```
+
+Now let's try some simple matching:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Simdi de koleksiyonlar (collections) ile deneyelim:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2 | _] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Basarili!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Sapka Operatoru (Pin Operator)
+
+Eslestirme operatoru, esitligin sol tarafinda bir degisken varsa eslestirme yapar. Fakat bazi durumlarda bu yeniden esleme islemi istenmemektedir. Bu gibi kosullarda, sapka operatoru (pin operator) kullanilir: `^`
+Degiskenin yanina sapka koyuldugunda "varolan degeri eslestir, yeni deger atama" demektir. Nasil calistigina goz atalim isterseniz:
+
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Sapka operatoru (pin operator) Elixir 1.2'de haritalar (map keys) ve fonksiyonlar icin kullanilmaya baslanmistir.
+
+
+```elixir
+ anahtar = "merhaba"
+```
+
+```elixir
+ %{^anahtar => deger} = %{"merhaba" => "dunya"}
+```
+
+```elixir
+ deger
+```
+
+```elixir
+ %{^anahtar => deger} = %{:merhaba => "dunya"}
+```
+
+Sapka operatorunun fonksiyonlarla beraber kullanilma sekli:
+
+
+```elixir
+ greeting = "Merhaba"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Merhaba","Mete")
+```
+
+```elixir
+ greet.("Gunaydin","Mete")
+```

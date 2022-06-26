@@ -1,0 +1,94 @@
+# Comprehension
+
+## Asas
+
+Pada kebanyakan masa 'comprehension' boleh digunakan untuk menghasilkan kenyataan-kenyataan yang lebih ringkas untuk lelaran `Enum` dan `Stream`.  Mari mulakan dengan melihat satu 'comprehension' mudah dan leraikan ia satu persatu:
+
+
+```elixir
+ list = [1, 2, 3, 4, 5]
+```
+
+```elixir
+ for x <- list, do: x*x
+```
+
+Perkara pertama yang dapat kita lihat ialah penggunaan `for` dan satu penjana.  Apa itu penjana? Penjana adalah ungkapan-ungkapan `x <- [1, 2, 3, 4]` yang dijumpai di dalam 'list comprehension', mereka bertanggungjawab untuk menjana nilai-nilai seterusnya.
+
+'Comprehension' tidak hanya terhad kepada list, ia boleh digunakan dengan mana-mana enumerable:
+
+
+```elixir
+ for {_key, val} <- [one: 1, two: 2, three: 3], do: val
+```
+
+```elixir
+ for {k, v} <- %{"a" => "A", "b" => "B"}, do: {k, v}
+```
+
+```elixir
+ for <<c <- "hello">>, do: <<c>>
+```
+
+Sebagaimana yang anda mungkin perasan, penjana bergantung kepada pemadanan corak untuk memadankan kumpulan input dengan pembolehubah sebelah kiri.  Jika tiada padanan dapat dilakukan, nilai itu diabaikan:
+
+
+```elixir
+ for {:ok, val} <- [ok: "Hello", error: "Unknown", ok: "World"], do: val
+```
+
+Pelbagai penjana juga boleh digunakan, lebih kurang sama dengan gelungan bersarang:
+
+
+```elixir
+ list = [1, 2, 3, 4]
+```
+
+```elixir
+ for n <- list, times <- 1..n do
+```
+
+Untuk memberikan gambaran yang lebih baik tentang gelungan yang sedang berjalan, mari kita gunakan `IO.puts` untuk memaparkan dua nilai janaan:
+
+
+```elixir
+ for n <- list, times <- 1..n, do: IO.puts "#{n} - #{times}"
+```
+
+List comprehensions adalah 'syntactic sugar' dan sepatutnya hanya digunakan apabila sesuai.
+
+## Tapisan
+
+Anda boleh anggapkan tapisan(filter) sebagai sejenis klausa kawalan untuk 'comprehension'.  Apabila satu nilai yang telah ditapis memulangkan nilai `false` atau `nil` ianya diabaikan dari list muktamad.  Mari gelungkan satu julat dan hanya pedulikan tentang nombor genap:
+
+
+```elixir
+ for x <- 1..10, is_even(x), do: x
+```
+
+Seperti dengan penjana, kita boleh gunakan pelbagai tapisan.  Mari proses julat kita dan tapiskan nilai-nilai ganjil dan tidak boleh dibahagikan dengan 3 tanpa meninggalkan baki:
+
+
+```elixir
+ for x <- 1..100,
+```
+
+## Menggunakan :into
+
+Bagaimana pula jika kita mahu menghasilkan sesuatu selain dari list?  Gunakan pilihan `:into` untuk lakukannya!  Sebagai satu peraturan am, `:into` menerima apa-apa struktur yang mengimplementasi protokol 'Collectable'.
+
+Dengan menggunakan `:into`, mari buat satu map dari satu list katakunci:
+
+
+```elixir
+ for {k, v} <- [one: 1, two: 2, three: 3], into: %{}, do: {k, v}
+```
+
+Oleh sebab 'bitstring' adalah 'enumerable' kita boleh gunakan 'list comprehension' dan `:into` untuk membuat string:
+
+
+```elixir
+ for c <- [72, 101, 108, 108, 111], into: "", do: <<c>>
+```
+
+Itu sahaja!  'List comprehension' adalah cara mudah untuk meringkaskan lelarkan sesatu 'collection'.

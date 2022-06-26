@@ -1,0 +1,111 @@
+# 並行性
+
+## 處理程序 (Processes)
+
+Erlang VM 中的處理程序是輕量級的，可以在所有的 CPU 上執行。儘管看起來像原生執行緒 (native threads)，但它們更簡單，在一個 Elixir 應用程式中有數千個並性處理程序並不罕見。
+
+建立一個新處理程序的最簡單方法是 `spawn`，它可以使用匿名函數或命名函數。當建立一個新處理程序時，它會回傳一個 _Process Identifier_ 或 PID，以在應用程式中獨特地標識它。
+
+現在以建立一個模組並定義一個想執行的函數來開始：
+
+
+```elixir
+ Example.add(2, 3)
+```
+
+為了非同步 (asynchronously) 地賦值 (evaluate) 函數，使用 `spawn/3`：
+
+
+```elixir
+ spawn(Example, :add, [2, 3])
+```
+
+### 信文遞送 (Message Passing)
+
+為了相互溝通，處理程序依靠信文遞送。其中有兩個主要元件： `send/2` 與 `receive`。`send/2` 函數允許發送信文給 PID。
+而監聽 (listen) 使用 `receive` 來配對信文。如果找不到配對，則執行式將處於不中斷狀態。
+
+
+```elixir
+ pid = spawn(Example, :listen, [])
+```
+
+```elixir
+ send pid, {:ok, "hello"}
+```
+
+```elixir
+ send pid, :ok
+```
+
+你可能會注意到 `listen/0` 函數是遞迴的，這使得處理程序可以處理多個信文。沒有遞迴，處理程序將在處理完第一則信文後退出。
+
+### 處理程序連結 (Process Linking)
+
+當一個處理程序崩潰時，有個與 `spawn` 有關問題是已知的。為此，需要使用 `spawn_link` 連接處理程序。兩個被連接一起的處理程序將能收到從對方來的退出通知：
+
+
+```elixir
+ spawn(Example, :explode, [])
+```
+
+```elixir
+ spawn_link(Example, :explode, [])
+```
+
+有時我們不希望被連結的處理程序造成當前的崩潰。為此，需要使用 `Process.flag/2` 來捕獲 (trap) 退出。它使用 erlang 的 [process_flag/2](http://erlang.org/doc/man/erlang.html#process_flag-2) 函數來做為 `trap_exit` 旗標 (flag)。當捕獲退出時 (`trap_exit` 是被設定為 `true`)，退出信號將作為一個 tuple 信文而被接收：`{:EXIT, from_pid, reason}`。
+
+
+```elixir
+ Example.run
+```
+
+### 處理程序監視 (Process Monitoring)
+
+如果不想將兩個處理程序連接起來，但是仍然需要通知功能呢？為此，可以使用 `spawn_monitor` 進行處理程序監視。當監視的處理程序崩潰時，會收到信文，而不會造成當前的處理程序崩潰或者需要捕獲退出。
+
+
+```elixir
+ Example.run
+```
+
+## Agents
+
+Agents 是背景處理程序持續狀態 (maintaining state) 的抽象化。可以從應用程式和節點 (node) 中存取。Agent 狀態被設置為函數的回傳值：
+
+
+```elixir
+ {:ok, agent} = Agent.start_link(fn -> [1, 2, 3] end)
+```
+
+```elixir
+ Agent.update(agent, fn (state) -> state ++ [4, 5] end)
+```
+
+```elixir
+ Agent.get(agent, &(&1))
+```
+
+當命名一個 Agent 後，可以用這個命名來代替它的 PID：
+
+
+```elixir
+ Agent.start_link(fn -> [1, 2, 3] end, name: Numbers)
+```
+
+```elixir
+ Agent.get(Numbers, &(&1))
+```
+
+## Tasks
+
+Tasks 提供了一種在背景執行函數的方法，可以稍後再擷取它的回傳值。當處理耗時 (expensive) 操作時，因不阻礙當前應用程序的執行而特別有用。
+
+
+```elixir
+ task = Task.async(Example, :double, [2000])
+```
+
+```elixir
+ Task.await(task)
+```

@@ -1,0 +1,108 @@
+# Concorrenza
+
+## Processi
+
+I processi che vivono nella Erlang VM sono leggeri, e possono tenere occupate tutte le CPU del sistema. Nonostante questi possano sembrare thread nativi, i processi Erlang sono più semplici, e non è raro trovare migliaia di processi concorrenti in un'applicazione Elixir.
+
+Il modo più semplice per lanciare un processo è attraverso il comando `spawn`, che accetta una funzione anonima o pre-definita. Quando creiamo un processo, il suo _Process Identifier_, o PID, ci viene restituito; con esso, possiamo identificare unicamente il processo creato all'interno della nostra applicazione.
+
+Per iniziare, creiamo un modulo e definiamo una funzione che vorremmo lanciare:
+
+
+```elixir
+ Example.add(2, 3)
+```
+
+Per lanciare la stessa funzione in modo asincrono, usiamo `spawn/3`:
+
+
+```elixir
+ spawn(Example, :add, [2, 3])
+```
+
+### Message Passing
+
+I processi utilizzano lo scambio di messaggi come metodo di comunicazione, facendo uso di due componenti principali: `send/2` e `receive/1`.  La funzione `send/2` ci permette di mandare messaggi ad altri PID, mentre `receive/1` ci consente di ascoltare quelli in arrivo effettuando un confronto (_match_) opzionale per determinare se il messaggio va considerato o ignorato.
+
+
+```elixir
+ pid = spawn(Example, :listen, [])
+```
+
+```elixir
+ send pid, {:ok, "hello"}
+```
+
+```elixir
+ send pid, :ok
+```
+
+### Process Linking
+
+Il componente `spawn` ha un problema: non ci informa quando un processo termina inaspettatamente. Per ovviare a questo inconveniente, possiamo utilizzare la funzione `spawn_link`: in questo modo i due processi collegati riceveranno i rispettivi messaggi di uscita.
+
+
+```elixir
+ spawn(Example, :explode, [])
+```
+
+```elixir
+ spawn_link(Example, :explode, [])
+```
+
+Talvolta non vogliamo che un processo "collegato" termini il processo che l'ha creato. Per evitare questa situazione, dobbiamo controllare i messaggi di uscita nel processo padre. Quando controlliamo i messaggi di uscita, questi verranno ricevuti nella seguente forma: `{:EXIT, dal_pid, ragione}`.
+
+
+```elixir
+ Example.run
+```
+
+### Process Monitoring
+
+Cosa possiamo fare quando non vogliamo che due processi siano collegati, ma allo stesso tempo desideriamo venire informati di possibili terminazioni inaspettate? In questo caso, `spawn_monitor` viene in nostro aiuto, permettendoci di monitorare i processi. Quando monitoriamo un processo, veniamo informati da un messaggio quando questo termina, senza preoccuparci di ripercussioni sul processo corrente, e senza dover controllare esplicitamente i messaggi di uscita nei singoli processi.
+
+
+```elixir
+ Example.run
+```
+
+## Agenti
+
+Gli Agenti sono un'astrazione che permette di accedere e manipolare in maniera agevole delle informazioni riguardanti lo stato di una parte di applicazione. Possiamo accedere ad agenti da altri processi all'interno della nostra applicazione (e nodo). Lo stato di un agente è determinato dal valore di ritorno della funzione che lo inizializza o lo aggiorna:
+
+
+```elixir
+ {:ok, agent} = Agent.start_link(fn -> [1, 2, 3] end)
+```
+
+```elixir
+ Agent.update(agent, fn (state) -> state ++ [4, 5] end)
+```
+
+```elixir
+ Agent.get(agent, &(&1))
+```
+
+Dando un nome ad un agente, possiamo comunicare con esso senza sapere il suo PID:
+
+
+```elixir
+ Agent.start_link(fn -> [1, 2, 3] end, name: Numbers)
+```
+
+```elixir
+ Agent.get(Numbers, &(&1))
+```
+
+## Task
+
+I Task rendono possibile eseguire una funzione in background, dalla quale possiamo ottenere il valore di ritorno in un momento successivo. I Task possono essere particolarmente utili quando abbiamo a che fare con operazioni particolarmente onerose in termini di tempo di esecuzione (per esempio una richiesta HTTP), e vogliamo evitare di bloccare l'esecuzione della nostra applicazione.
+
+
+```elixir
+ task = Task.async(Example, :double, [2000])
+```
+
+```elixir
+ Task.await(task)
+```

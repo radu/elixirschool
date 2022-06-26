@@ -1,0 +1,147 @@
+# Pomocné funkcie IEx
+
+## Prehľad
+
+Pri práci v Elixire, IEx je náš najlepší kamarát.
+Je to Read–eval–print loop, ale má mnoho pokročilých funkcií, ktoré nám môžu uľahčiť život, keď skúmame nový kód alebo počas vývoja projektu.
+Existuje niekoľko zabudovaných pomocníkov, o ktorých si povieme v tejto lekcii.
+
+### Autocomplete
+
+Keď pracujeme v príkazovom riadku, môžeme často naraziť na nový modul o ktorom nič nevieme.
+Ak chceme vedieť čo máme k dispozícii, funkcionalita automatického doplňovania je úžasná.
+Jednoducho napíšeme meno modulu nasledované `.` a potom stlačíme `Tab`:
+
+
+```elixir
+ Map. # press Tab
+```
+
+A teraz vieme aké funkcie máme k dispozícii!
+
+### .iex.exs
+
+Zakaždým keď sa spustí IEx, bude hľadať konfiguračný súbor `.iex.exs`. Ak nie je v aktuálnom adresári, tak sa ako záloha použije z užívateľovho home adresára `~/.iex.exs`.
+
+Možnosti konfigurácie a kód definovaný v tomto súbore bude dostupný hneď, keď sa spustí IEx. Napríklad, ak chceme pomocné funkcie dostupné v IEx, tak môžeme otvoriť `.iex.exs` a spraviť zopár zmien.
+
+Začneme pridaním modulu, ktorý má zopár pomocných funkcií:
+
+
+```elixir
+defmodule IExHelpers do
+  def whats_this?(term) when is_nil(term), do: "Type: Nil"
+  def whats_this?(term) when is_binary(term), do: "Type: Binary"
+  def whats_this?(term) when is_boolean(term), do: "Type: Boolean"
+  def whats_this?(term) when is_atom(term), do: "Type: Atom"
+  def whats_this?(_term), do: "Type: Unknown"
+end
+```
+
+Teraz, keď spustíme IEx, bude modul IExHelpers dostupný od spustenia.
+Spustime IEx a poďme vyskúšať naše nové pomocné funkcie:
+
+
+```elixir
+ IExHelpers.whats_this?("a string")
+```
+
+```elixir
+ IExHelpers.whats_this?(%{})
+```
+
+```elixir
+ IExHelpers.whats_this?(:test)
+```
+
+Ako môžeme vidieť nepotrebujeme použiť require alebo import aby sme mali prístup k našim pomocným funkciám, IEx to spraví za nás.
+
+### h
+
+`h` je jeden z najužitočnejších nástrojov Elixir shellu.
+Vďaka perfektnej podpore dokumentácie, ju môžeme pri akomkoľvek kóde zobraziť pomocou tejto pomocnej funkcie.
+
+Ukážme si ako funguje:
+
+
+```elixir
+ h Enum
+```
+
+A teraz to môžeme dokonca kombinovať s automatickým doplnením nášho shellu.
+Predstavme si, že chceme preskúmať modul Map prvý krát:
+
+
+```elixir
+ h Map
+```
+
+```elixir
+ Map.
+```
+
+```elixir
+ h Map.merge/2
+```
+
+Ako môžeme vidieť, nielen, že sme schopní nájisť aké funkcie má modul k dispozícii, ale máme prístup aj k dokumentácii jednotlivých funkcií, kde mnohé obsahujú aj príklad použitia.
+
+### i
+
+Teraz zúžitkujeme naše novo získané znalosti o pomocnej funkcii `h` tým, že ju použijeme aby sme sa naučili viac o pomocnej funkcii `i`:
+
+
+```elixir
+ h i
+```
+
+```elixir
+ i Map
+```
+
+Teraz máme nejaké informácie o module `Map` ako napríklad, kde nájdeme súbor so zdrojovým kódom a na ktoré moduly odkazuje. To je veľmi užitočné najmä, keď preskúmavame cudzie dátové typy a nové funkcie.
+
+Individuálne položky sú na prvý pohľad stručné, ale po prejdení môžeme získať užitočné informácie:
+
+- Je dátový typ atóm
+- Kde sa nachádza zdrojový kód
+- Verziu a možnosti kompilácie
+- Základný popis
+- Ako k nemu môžeme pristupovať
+- Na ktoré moduly odkazuje
+
+To nám dáva informácie o tom ako s modulom pracovať a je určite lepšie ako to skúšať naslepo.
+
+### r
+
+Ak chceme prekompilovať určitý modul môžeme tak urobiť pomocnou funkciou `r`. Povedzme, že sme zmenili časť kódu a chceme spustiť novú funkciu, ktorú sme pridali. Aby sme to spravili, potrebujeme uložiť naše zmeny a prekompilovať pomocou `r`:
+
+
+```elixir
+ r MyProject
+```
+
+### t
+
+Pomocná funkcia `t` nám povie aké typy sú dostupne v danom module:
+
+
+```elixir
+ t Map
+```
+
+A teraz vieme, že modul `Map` definuje typy kľúča a hodnoty v jeho implementácii.
+Ak sa pozrieme na zdrojový kód modulu `Map`:
+
+
+```elixir
+defmodule Map do
+# ...
+  @type key :: any
+  @type value :: any
+# ...
+```
+
+Toto je jednoduchý príklad, v ktorom sa uvádza, že kľúče a hodnoty podľa implementácie môžu byť akéhokoľvek typu, ale je to užitočné vedieť.
+
+Použitím týchto zabudovaných funkcií môžeme jednoducho preskúmať akýkoľvek kód a dozvedieť sa ako funguje. IEx je veľmi výkonný a robustný nástroj, ktorý ocení každý vývojár.

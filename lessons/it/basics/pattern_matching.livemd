@@ -1,0 +1,123 @@
+# Pattern Matching
+
+## Operatore match
+
+Se pronto ad essere spiazzato? In Elixir, l'operatore `=` è in realtà un operatore match. Tramite l'operatore match possiamo assegnare ed abbinare valori, simile al segno uguale in algebra. Scrivendolo, transforma l'intera espressione in un'equazione ed Elixir deve abbinare i valori sulla sinistra a quelli della destra. Se l'operazione ha successo, Elixir genera i valori dell'equazione, altrimenti, genera un errore. Diamo uno sguardo:
+
+
+```elixir
+ x = 1
+```
+
+Ora proviamo un semplice abbinamento:
+
+
+```elixir
+ 1 = x
+```
+
+```elixir
+ 2 = x
+```
+
+Ora proviamo con una delle collezioni che conosciamo:
+
+
+```elixir
+ list = [1, 2, 3]
+```
+
+```elixir
+ [1, 2, 3] = list
+```
+
+```elixir
+ [] = list
+```
+
+```elixir
+ [1 | tail] = list
+```
+
+```elixir
+ tail
+```
+
+```elixir
+ [2|_] = list
+```
+
+```elixir
+ {:ok, value} = {:ok, "Successful!"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ {:ok, value} = {:error}
+```
+
+## Operator pin
+
+Abbiamo appena imparato che l'operatore match gestisce l'assegnazione quando la parte sinistra dell'abbinamento include una variabile. In alcuni casi questo comportamento, cambiare l'abbinamento di una variabile, non è desiderabile. Per queste situazioni, abbiamo l'operatore pin `^`.
+
+Quando _fissiamo_ (_pin_) una variabile, abbiniamo il valore esistente invece di cambiare l'abbinamento con un nuovo valore. Vediamo come funziona:
+
+
+```elixir
+ x = 1
+```
+
+```elixir
+ ^x = 2
+```
+
+```elixir
+ {x, ^x} = {2, 1}
+```
+
+```elixir
+ x
+```
+
+Elixir 1.2 ha introdotto il supporto per usare l'operatore pin per le chiavi delle mappe e nelle clausole delle funzioni:
+
+
+```elixir
+ key = "hello"
+```
+
+```elixir
+ %{^key => value} = %{"hello" => "world"}
+```
+
+```elixir
+ value
+```
+
+```elixir
+ %{^key => value} = %{:hello => "world"}
+```
+
+Un esempio di _pinning_ in una clausola di una funzione:
+
+
+```elixir
+ greeting = "Hello"
+```
+
+```elixir
+ greet = fn
+```
+
+```elixir
+ greet.("Hello", "Sean")
+```
+
+```elixir
+ greet.("Mornin'", "Sean")
+```
+
+Da notare il fatto la riassegnazione di `greeting` nell'esempio `"Mornin'"`, la riassegnazione succede solo dentro la funzione. Fuori dalla funzione `greeting` contiente ancora il valore di `"Hello"`.
